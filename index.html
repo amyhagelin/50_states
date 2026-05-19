@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USA Map Challenge ⭐ All 50 States</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Quicksand:wght@600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Quicksand',sans-serif;background:#fbf3e0;color:#2e3a4d;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{text-align:center;padding:6px 20px 3px;background:linear-gradient(90deg,#b9d4e8,#cce2ee,#b9d4e8);border-bottom:2px solid #3d6680;flex-shrink:0}
+header h1{font-family:'Baloo 2',cursive;font-size:clamp(1.05rem,2.3vw,1.5rem);color:#b03a2e}
+header p{font-size:0.74rem;color:#3d6680;margin-top:1px;font-weight:600}
+
+/* LEVEL BAR - more compact since 10 levels */
+.level-bar{display:flex;justify-content:center;gap:4px;padding:5px 8px;background:#cce2ee;border-bottom:1px solid #5d8aa8;flex-shrink:0;flex-wrap:wrap;align-items:center}
+.lvl{padding:4px 8px;border:2px solid #7da9c8;background:#e6f0f7;color:#2e3a4d;border-radius:6px;font-family:'Baloo 2',cursive;font-size:0.72rem;font-weight:700;cursor:pointer;transition:all .13s;white-space:nowrap;line-height:1.05}
+.lvl:hover{background:#b9d4e8;border-color:#3d6680}
+.lvl.active{background:#b03a2e;border-color:#7d1a0e;color:#fbf3e0;box-shadow:0 0 8px #b03a2e88}
+.lvl .sub{font-size:0.6rem;opacity:.85;display:block;font-weight:600;font-family:'Quicksand',sans-serif}
+
+/* MODE SELECTOR */
+.mode-selector{display:flex;align-items:center;gap:3px;margin-left:8px;padding-left:8px;border-left:1px solid #5d8aa8}
+.mode-btn{padding:4px 8px;border:2px solid #7da9c8;background:#e6f0f7;color:#2e3a4d;border-radius:6px;font-family:'Baloo 2',cursive;font-size:0.7rem;font-weight:700;cursor:pointer;transition:all .13s;white-space:nowrap}
+.mode-btn:hover{background:#b9d4e8}
+.mode-btn.active{background:#3d6680;border-color:#1f4060;color:#fff;box-shadow:0 0 8px #3d668088}
+.mode-btn.active.learn-active{background:#7a5db8;border-color:#4d3080}
+
+.score-bar{display:flex;justify-content:center;gap:22px;padding:4px 14px;background:#cce2ee;border-bottom:1px solid #5d8aa8;font-weight:700;font-size:0.8rem;flex-shrink:0;color:#2e3a4d}
+.s-item{display:flex;align-items:center;gap:5px}
+.s-dot{width:10px;height:10px;border-radius:50%}
+.d-c{background:#5b9b3a}.d-w{background:#c0532e}.d-l{background:#b03a2e}
+.inst-bar{text-align:center;font-size:0.8rem;font-weight:700;color:#3d6680;padding:4px 10px;background:#cce2ee;border-bottom:1px solid #5d8aa8;flex-shrink:0}
+.inst-bar span{color:#b03a2e}
+.layout{display:flex;flex:1;overflow:hidden;min-height:0}
+
+/* WORD BANK - slightly wider to fit 50 names */
+.word-bank{width:170px;flex-shrink:0;background:#e6f0f7;border-right:2px solid #5d8aa8;padding:7px 6px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+.word-bank.hidden{display:none}
+.wb-title{font-family:'Baloo 2',cursive;font-size:0.84rem;color:#b03a2e;text-align:center;padding-bottom:5px;border-bottom:1px dashed #7da9c8;margin-bottom:1px;flex-shrink:0}
+.chip{padding:4px 8px;background:#fbf3e0;border:2px solid #c8a378;border-radius:6px;font-family:'Quicksand',sans-serif;font-weight:700;font-size:0.74rem;color:#2e3a4d;cursor:pointer;transition:all .13s;text-align:left;width:100%}
+.chip:hover:not(.used){background:#fff8e8;border-color:#b03a2e;transform:translateX(3px)}
+.chip.selected{background:#b03a2e;border-color:#7d1a0e;color:#fbf3e0;transform:translateX(5px);box-shadow:0 0 10px #b03a2e88}
+.chip.used{opacity:.22;text-decoration:line-through;cursor:default}
+.chip.learn{background:#d8d0ee;border-color:#7a5db8;color:#3d2a5d;cursor:default}
+
+/* SPELL PANEL */
+.spell-panel{width:235px;flex-shrink:0;background:#e6f0f7;border-right:2px solid #5d8aa8;padding:12px 11px;display:flex;flex-direction:column;gap:9px;overflow-y:auto}
+.spell-panel.hidden{display:none}
+.sp-title{font-family:'Baloo 2',cursive;font-size:0.92rem;color:#b03a2e;text-align:center;padding-bottom:5px;border-bottom:1px dashed #7da9c8;margin-bottom:2px}
+.sp-prompt{background:#fbf3e0;border:2px solid #3d6680;border-radius:9px;padding:9px 11px;font-family:'Baloo 2',cursive;font-size:0.92rem;color:#2e3a4d;text-align:center}
+.sp-prompt .num{display:inline-block;width:26px;height:26px;line-height:22px;border-radius:50%;background:#b03a2e;color:#fbf3e0;font-size:0.82rem;margin-right:5px;border:2px solid #fbf3e0}
+.sp-prompt small{display:block;font-family:'Quicksand',sans-serif;font-size:0.7rem;color:#3d6680;font-weight:600;margin-top:4px}
+.sp-input-wrap{display:flex;flex-direction:column;gap:5px}
+.sp-input{padding:9px 11px;border:2px solid #c8a378;border-radius:8px;font-family:'Quicksand',sans-serif;font-size:0.92rem;font-weight:700;color:#2e3a4d;background:#fbf3e0;outline:none;transition:all .13s;width:100%}
+.sp-input:focus{border-color:#3d6680;box-shadow:0 0 0 3px #3d668044}
+.sp-input.wrong{border-color:#c0532e;background:#fde4d8;animation:shake .4s ease}
+.sp-input.correct{border-color:#5b9b3a;background:#e0eed4}
+.sp-submit{padding:7px;border:none;border-radius:7px;background:#3d6680;color:#fff;font-family:'Baloo 2',cursive;font-size:0.85rem;cursor:pointer;font-weight:700;transition:all .13s}
+.sp-submit:hover{background:#2d5070;transform:translateY(-1px)}
+.sp-submit:disabled{background:#9aa;cursor:default;transform:none}
+.sp-helpers{display:flex;gap:5px}
+.sp-help-btn{flex:1;padding:5px 7px;border:2px solid #c8a378;background:#fbf3e0;color:#2e3a4d;border-radius:6px;font-family:'Baloo 2',cursive;font-size:0.72rem;cursor:pointer;font-weight:700;transition:all .13s}
+.sp-help-btn:hover{background:#f5d8a8}
+.sp-reveal{padding:7px 9px;background:#e0eed4;border:2px solid #5b9b3a;border-radius:7px;font-family:'Baloo 2',cursive;font-size:0.8rem;color:#2a4a18;text-align:center;letter-spacing:0.5px}
+.sp-progress{display:flex;flex-wrap:wrap;gap:2px;padding:3px 0;justify-content:center;max-height:64px;overflow-y:auto}
+.sp-pip{width:8px;height:8px;border-radius:50%;background:#fbf3e0;border:1.5px solid #c8a378;transition:all .15s;flex-shrink:0}
+.sp-pip.done{background:#5b9b3a;border-color:#3a6a20}
+.sp-pip.current{background:#3d6680;border-color:#1f4060;box-shadow:0 0 6px #3d668088}
+.sp-tip{font-size:0.7rem;color:#3d6680;font-weight:600;text-align:center;padding:5px 4px;font-style:italic;line-height:1.35}
+
+/* MAP */
+.map-area{flex:1;display:flex;align-items:center;justify-content:center;padding:6px;background:#aac8dc;overflow:hidden;min-width:0;min-height:0;position:relative;touch-action:none}
+.map-zoom-layer{display:flex;align-items:center;justify-content:center;width:100%;height:100%;transform-origin:50% 50%;transition:transform .14s ease-out;will-change:transform}
+.map-zoom-layer.dragging{transition:none;cursor:grabbing}
+.map-zoom-layer.zoomed{cursor:grab}
+.map-wrapper{position:relative;display:block;line-height:0;height:100%;aspect-ratio:1100/883;max-height:100%;max-width:100%}
+#us-svg{display:block;width:100%;height:100%;pointer-events:auto}
+
+/* ZOOM CONTROLS - floating top-right of map area */
+.zoom-controls{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:3px;z-index:30;user-select:none}
+.zoom-btn{width:30px;height:30px;border-radius:6px;border:2px solid #3d6680;background:rgba(251,243,224,.88);color:#3d6680;font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:all .12s;box-shadow:0 1px 3px rgba(0,0,0,.15);padding:0}
+.zoom-btn:hover{background:#3d6680;color:#fbf3e0;transform:scale(1.06)}
+.zoom-btn:active{transform:scale(.95)}
+.zoom-btn.reset{font-size:.74rem;letter-spacing:-.5px}
+.zoom-level{font-size:.6rem;text-align:center;color:#3d6680;font-weight:800;background:rgba(251,243,224,.88);border:1.5px solid #3d6680;border-radius:5px;padding:1px 3px;margin-top:2px;line-height:1.3}
+
+/* State styling */
+.state{fill:#f5c987;stroke:#a04e2e;stroke-width:1;cursor:pointer;transition:fill .15s}
+.state.inactive{fill:#d4c5a8;cursor:default;pointer-events:none;stroke:#a89878}
+.state:not(.inactive):hover{fill:#f4a261;filter:drop-shadow(0 0 3px #a04e2e77)}
+.state.correct{fill:#9bb87a;stroke:#5a7a32;cursor:default}
+.state.wrong{fill:#c0532e;stroke:#8a3a1c}
+.state.learn-highlight{fill:#d8d0ee;stroke:#7a5db8;cursor:default}
+.state.spell-target{fill:#f4a261;stroke:#a04e2e;stroke-width:2;cursor:default;animation:pulse 1.6s ease-in-out infinite}
+.water{fill:#aac8dc}
+
+/* Inset visual elements */
+.inset-divider{stroke:#3d6680;stroke-width:1;stroke-dasharray:6,4;opacity:0.35;pointer-events:none}
+.inset-box{fill:none;stroke:#3d6680;stroke-width:1;stroke-dasharray:4,3;opacity:0.35;pointer-events:none}
+.inset-label{fill:#3d6680;font-family:'Baloo 2',cursive;font-size:13px;font-weight:800;opacity:0.55;pointer-events:none}
+
+@keyframes pulse{
+  0%,100%{filter:drop-shadow(0 0 0 #a04e2e00)}
+  50%{filter:drop-shadow(0 0 8px #a04e2eaa)}
+}
+
+/* DOTS */
+.dot{position:absolute;width:22px;height:22px;border-radius:50%;background:#b03a2e;border:2.5px solid #fbf3e0;color:#fbf3e0;font-family:'Baloo 2',cursive;font-size:0.6rem;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;transform:translate(-50%,-50%);transition:all .15s;box-shadow:0 2px 8px rgba(0,0,0,0.5);z-index:20;user-select:none;pointer-events:all}
+.dot:hover:not(.correct):not(.wrong):not(.learn):not(.spell-pending){transform:translate(-50%,-50%) scale(1.35);box-shadow:0 0 14px #b03a2e99}
+.dot.correct{background:#5b9b3a;border-color:#fbf3e0;cursor:default;animation:popIn .4s cubic-bezier(.34,1.56,.64,1) forwards}
+.dot.wrong{background:#c0532e;animation:shake .4s ease}
+.dot.learn{background:#7a5db8;color:#fff;cursor:default;pointer-events:none}
+.dot.spell-pending{background:#3d6680;pointer-events:none;cursor:default;font-size:0.7rem}
+.dot.spell-target{background:#b03a2e;pointer-events:none;animation:targetPulse 1.4s ease-in-out infinite;font-size:0.78rem;width:28px;height:28px}
+.dot.hint-flash{animation:hintFlash .5s ease 3}
+.dot-label{position:absolute;transform:translateX(-50%);background:rgba(251,243,224,.96);color:#3a6a20;font-family:'Quicksand',sans-serif;font-weight:700;font-size:0.56rem;padding:1px 5px;border-radius:3px;pointer-events:none;white-space:nowrap;z-index:21;border:1px solid #5b9b3a66;margin-top:11px}
+.dot-label.learn{color:#fff;background:#7a5db8;border-color:#a89cd0;font-size:0.7rem;padding:2px 7px;font-weight:800;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
+
+@keyframes popIn{0%{transform:translate(-50%,-50%) scale(.4);opacity:.5}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translate(-50%,-50%)}25%{transform:translate(calc(-50% - 5px),-50%)}75%{transform:translate(calc(-50% + 5px),-50%)}}
+@keyframes hintFlash{0%,100%{transform:translate(-50%,-50%) scale(1);box-shadow:0 0 0 0 #b03a2ecc}50%{transform:translate(-50%,-50%) scale(1.5);box-shadow:0 0 0 10px #b03a2e00}}
+@keyframes targetPulse{
+  0%,100%{transform:translate(-50%,-50%) scale(1);box-shadow:0 0 0 0 #b03a2ecc}
+  50%{transform:translate(-50%,-50%) scale(1.15);box-shadow:0 0 0 12px #b03a2e00}
+}
+
+/* CONTROLS */
+.controls{display:flex;justify-content:center;gap:12px;padding:7px;background:#cce2ee;border-top:1px solid #5d8aa8;flex-shrink:0}
+.btn{padding:6px 18px;border:none;border-radius:7px;font-family:'Baloo 2',cursive;font-size:0.88rem;cursor:pointer;transition:all .13s;font-weight:700}
+.btn-hint{background:#3d6680;color:#fff}.btn-reset{background:#c0532e;color:#fff}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.1)}.btn:active{transform:translateY(0)}
+
+/* TOAST */
+.toast{position:fixed;bottom:55px;left:50%;transform:translateX(-50%) translateY(80px);padding:8px 20px;border-radius:30px;font-weight:800;font-size:0.9rem;z-index:9999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.ok{background:#5b9b3a;color:#fbf3e0}.toast.bad{background:#c0532e;color:#fff}.toast.info{background:#b03a2e;color:#fbf3e0}
+
+/* WIN */
+.win-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:center;justify-content:center}
+.win-overlay.show{display:flex}
+.win-card{background:#e6f0f7;border:2px solid #b03a2e;border-radius:20px;padding:30px 44px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:popIn .5s cubic-bezier(.34,1.56,.64,1) forwards}
+.win-card .e{font-size:3rem}.win-card h2{font-family:'Baloo 2',cursive;font-size:1.6rem;color:#b03a2e;margin:6px 0 3px}.win-card p{color:#3d6680;font-weight:600;margin-bottom:16px}
+
+@media(max-width:560px){
+  .layout{flex-direction:column}
+  .word-bank,.spell-panel{width:100%;flex-direction:row;flex-wrap:wrap;max-height:130px;border-right:none;border-bottom:2px solid #5d8aa8;padding:6px;justify-content:center;overflow-y:auto}
+  .wb-title,.sp-title{width:100%}.chip{width:auto;font-size:.7rem;padding:4px 7px}
+  .lvl{font-size:.65rem;padding:3px 6px}
+  .mode-selector{margin-left:5px;padding-left:5px}
+  .spell-panel{flex-direction:column;max-height:200px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⭐ USA Map Challenge — All 50 States</h1>
+  <p id="header-tagline">Pick a state name, then click it on the map</p>
+</header>
+
+<div class="level-bar" id="level-bar">
+  <button class="lvl active" data-level="1">L1<span class="sub">New England</span></button>
+  <button class="lvl" data-level="2">L2<span class="sub">Mid-Atlantic</span></button>
+  <button class="lvl" data-level="3">L3<span class="sub">The South</span></button>
+  <button class="lvl" data-level="4">L4<span class="sub">Midwest</span></button>
+  <button class="lvl" data-level="5">L5<span class="sub">Heartland</span></button>
+  <button class="lvl" data-level="6">L6<span class="sub">Great Plains</span></button>
+  <button class="lvl" data-level="7">L7<span class="sub">Mountain West</span></button>
+  <button class="lvl" data-level="8">L8<span class="sub">Pacific</span></button>
+  <button class="lvl" data-level="9">L9<span class="sub">AK & HI</span></button>
+  <button class="lvl" data-level="10">L10<span class="sub">All 50</span></button>
+  <div class="mode-selector" role="tablist" aria-label="Game mode">
+    <button class="mode-btn active" data-mode="match" title="Click a state name, then click the map">🎯 Match</button>
+    <button class="mode-btn" data-mode="spell" title="Type the state name from memory (no word bank)">✏️ Spell</button>
+    <button class="mode-btn" data-mode="learn" title="Study mode - state names are shown on the map">📖 Learn</button>
+  </div>
+</div>
+
+<div class="score-bar">
+  <div class="s-item"><div class="s-dot d-c"></div><span id="sc">0</span> correct</div>
+  <div class="s-item"><div class="s-dot d-w"></div><span id="sw">0</span> wrong</div>
+  <div class="s-item"><div class="s-dot d-l"></div><span id="sl">6</span> left</div>
+</div>
+
+<div class="inst-bar" id="inst">Select a state name to start 👈</div>
+
+<div class="layout">
+  <div class="word-bank" id="wb"><div class="wb-title">🗺️ Word Bank</div></div>
+  <div class="spell-panel hidden" id="sp">
+    <div class="sp-title">✏️ Spell the State</div>
+    <div class="sp-progress" id="sp-progress"></div>
+    <div class="sp-prompt" id="sp-prompt">
+      <span class="num" id="sp-num">1</span><span id="sp-prompt-text">Get ready!</span>
+      <small id="sp-prompt-sub">A state will light up on the map</small>
+    </div>
+    <div class="sp-input-wrap">
+      <input type="text" class="sp-input" id="sp-input" placeholder="Type the state name..." autocomplete="off" autocapitalize="words" spellcheck="false">
+      <button class="sp-submit" id="sp-submit">Check ✓</button>
+    </div>
+    <div class="sp-helpers">
+      <button class="sp-help-btn" id="sp-hint" title="Show one more letter">💡 Hint</button>
+      <button class="sp-help-btn" id="sp-show" title="Reveal the full answer">👁️ Show</button>
+    </div>
+    <div class="sp-reveal" id="sp-reveal" style="display:none">&nbsp;</div>
+    <div class="sp-tip">Tip: Capital letters and spaces don't matter — just spell it right!</div>
+  </div>
+
+  <div class="map-area" id="map-area">
+    <div class="map-zoom-layer" id="map-zoom-layer">
+    <div class="map-wrapper" id="map-wrapper">
+      <svg id="us-svg" viewBox="0 0 1100 883" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <rect class="water" width="100%" height="100%"/>
+<line class="inset-divider" x1="0" y1="669.1" x2="1100" y2="669.1"/>
+<rect class="inset-box" x="22.0" y="677.9" width="242.0" height="196.0"/>
+<rect class="inset-box" x="269.5" y="677.9" width="121.0" height="196.0"/>
+<text class="inset-label" x="26.0" y="691.9">AK</text>
+<text class="inset-label" x="273.5" y="691.9">HI</text>
+<!-- STUDY -->
+<path id="state-Maine" class="state" data-name="Maine" d="M995.3,116.5L997.2,115.1L999.6,117.3L999.3,112.3L1002.4,112.6L1000.0,109.9L1001.8,105.4L1004.1,103.4L1003.3,101.6L1005.3,98.6L1005.3,97.2L1003.9,97.1L1004.2,96.2L1003.5,95.8L1004.0,92.4L1002.8,91.5L1003.4,87.2L1005.2,85.0L1004.3,78.0L1011.9,56.1L1015.1,56.0L1016.1,60.1L1019.2,61.3L1023.4,58.3L1023.7,57.1L1026.9,56.1L1026.7,54.4L1028.8,53.8L1038.2,58.4L1047.2,85.7L1046.6,86.8L1047.8,87.9L1047.2,88.9L1047.7,91.4L1049.6,91.1L1051.2,92.4L1055.0,92.0L1055.9,93.9L1054.5,94.6L1056.8,96.9L1056.3,99.5L1059.9,102.5L1060.4,100.6L1062.8,100.6L1068.9,107.8L1067.2,109.5L1066.1,113.1L1064.5,113.1L1065.3,113.9L1063.7,113.6L1063.6,112.3L1062.2,113.1L1063.2,114.2L1062.8,115.5L1062.1,114.5L1061.9,115.7L1060.8,115.0L1060.2,115.5L1060.5,117.8L1058.4,118.3L1058.3,119.5L1057.2,118.5L1056.9,118.6L1057.0,119.4L1056.4,118.8L1055.5,118.6L1055.8,122.9L1055.1,121.4L1055.1,122.7L1054.1,121.4L1053.0,121.4L1054.8,123.1L1053.6,123.2L1053.7,125.2L1051.4,122.0L1050.6,121.7L1050.9,122.2L1050.2,122.5L1049.8,121.4L1049.8,122.8L1049.0,122.5L1048.9,123.5L1047.6,123.7L1048.0,124.5L1049.6,123.7L1051.5,125.5L1050.9,127.1L1049.4,127.4L1050.2,128.3L1049.7,129.3L1047.4,127.9L1048.0,125.1L1047.1,124.4L1046.7,125.6L1046.1,123.1L1045.4,123.6L1046.3,126.1L1045.5,124.4L1044.4,126.2L1046.4,130.1L1041.9,128.7L1040.5,129.6L1040.2,125.2L1039.4,124.4L1039.7,125.8L1038.9,127.0L1037.9,126.6L1036.8,127.7L1038.2,129.6L1037.2,133.9L1037.4,136.6L1038.4,136.0L1037.8,139.1L1037.0,138.8L1035.6,141.4L1035.5,140.7L1034.4,140.3L1033.8,141.7L1034.3,140.3L1033.7,140.7L1033.6,139.9L1032.4,140.8L1032.2,144.4L1031.2,143.6L1030.8,145.5L1030.5,144.4L1030.2,145.3L1029.8,144.8L1029.9,146.5L1028.6,143.1L1028.8,146.8L1027.4,149.4L1026.2,147.7L1024.8,148.2L1024.4,149.9L1024.3,149.1L1023.5,149.5L1024.3,146.0L1020.8,149.3L1020.3,152.0L1022.0,154.4L1019.4,156.1L1019.4,157.6L1020.4,157.9L1019.2,159.8L1019.5,160.4L1017.4,162.0L1017.8,166.0L1016.5,169.1L1013.9,168.0L1013.6,165.6L1009.4,162.4L1008.9,158.3L995.3,116.5Z"/>
+<path id="state-New_Hampshire" class="state" data-name="New Hampshire" d="M985.1,182.7L984.9,180.1L986.2,178.4L983.8,164.3L984.5,163.5L984.4,160.8L985.6,158.8L985.4,156.4L986.4,153.5L985.8,152.9L986.8,150.5L984.9,145.8L986.0,144.0L988.8,142.8L988.8,141.7L990.4,140.8L991.9,138.2L991.2,136.9L992.1,135.9L989.4,132.4L990.8,128.1L989.5,126.3L990.6,125.3L989.7,124.6L990.5,120.4L989.5,119.8L990.6,119.6L991.8,117.5L993.1,118.5L994.6,118.4L995.2,116.5L1008.9,158.3L1009.4,162.4L1013.3,165.3L1013.9,168.0L1016.4,168.7L1016.4,169.8L1015.7,174.2L1012.1,175.5L1011.8,176.9L1010.0,177.4L1010.2,179.2L1009.0,179.3L1008.5,180.7L987.6,185.3L985.1,182.7Z"/>
+<path id="state-Vermont" class="state" data-name="Vermont" d="M962.4,157.5L962.4,153.7L963.3,151.6L962.3,149.2L962.6,147.3L959.9,143.3L959.9,138.9L958.7,137.7L958.4,133.5L990.6,125.3L989.5,126.1L990.8,128.1L989.4,132.4L992.1,135.9L991.2,136.9L991.9,138.2L990.4,140.8L988.8,141.7L988.8,142.8L985.2,144.7L984.9,146.0L986.8,150.5L985.8,152.9L986.4,153.5L985.4,156.4L985.6,158.8L984.4,160.8L984.5,163.5L983.8,164.3L986.2,178.4L984.9,180.1L985.0,182.3L987.6,185.3L973.0,188.5L968.9,169.1L967.2,167.1L966.1,167.4L966.0,168.9L965.3,168.6L965.6,163.7L962.4,157.5Z"/>
+<path id="state-Massachusetts" class="state" data-name="Massachusetts" d="M1036.7,209.8L1039.6,208.4L1039.3,206.3L1041.8,208.9L1039.4,210.2L1036.7,209.8Z M1025.4,211.3L1026.5,210.9L1028.7,206.9L1031.3,208.7L1031.9,207.6L1032.2,209.4L1027.8,210.8L1026.8,212.1L1025.4,211.3Z M973.2,206.4L973.2,188.4L1008.5,180.7L1009.0,179.3L1010.2,179.2L1010.0,177.4L1011.8,176.9L1012.1,175.5L1014.1,174.2L1015.7,174.2L1017.7,178.4L1019.4,178.8L1020.2,177.6L1021.3,178.7L1020.5,180.4L1020.0,179.9L1016.9,182.4L1016.9,183.3L1017.6,182.8L1017.9,183.5L1016.4,184.8L1017.2,185.7L1016.0,185.2L1015.7,186.3L1016.8,187.6L1016.3,187.1L1015.8,187.3L1015.5,189.1L1016.2,188.4L1016.0,189.4L1017.2,189.2L1017.4,189.9L1017.9,189.2L1018.8,189.6L1017.6,188.5L1018.2,188.1L1020.7,188.9L1025.4,194.2L1024.7,194.6L1024.2,193.4L1023.4,194.8L1026.9,195.8L1027.6,198.5L1030.4,199.6L1033.4,199.5L1037.3,196.2L1036.8,194.0L1035.7,193.2L1035.6,194.4L1034.1,191.0L1032.9,190.6L1032.5,191.8L1031.3,191.0L1032.1,190.3L1034.2,190.4L1037.2,193.3L1039.4,198.4L1039.1,202.5L1039.0,199.8L1038.0,199.3L1034.0,202.1L1032.2,201.9L1030.4,204.5L1027.6,206.3L1026.9,206.1L1027.2,202.8L1026.4,202.3L1026.9,201.5L1026.1,202.1L1026.2,201.5L1025.0,201.3L1025.5,202.7L1024.7,202.3L1024.8,203.8L1023.7,203.7L1023.6,205.7L1022.9,204.6L1022.7,205.7L1022.0,205.3L1022.5,207.1L1020.9,209.0L1019.3,209.0L1018.1,205.1L1013.4,202.7L1011.3,197.6L986.6,203.5L985.7,204.7L985.5,203.7L973.2,206.4Z"/>
+<path id="state-Rhode_Island" class="state" data-name="Rhode Island" d="M1015.2,211.0L1015.9,210.4L1015.8,206.7L1016.8,205.1L1018.1,205.1L1019.3,209.0L1018.3,210.4L1016.8,206.4L1017.3,210.1L1015.2,211.0Z M1007.2,217.1L1006.9,214.6L1007.7,214.2L1003.9,199.8L1011.3,197.6L1012.1,200.6L1012.8,200.3L1013.4,202.7L1016.1,204.3L1016.1,205.5L1015.8,206.2L1015.2,205.3L1015.1,206.2L1014.9,204.8L1012.6,203.3L1013.7,204.8L1013.6,206.1L1012.2,206.0L1013.7,208.1L1012.9,208.5L1014.1,211.0L1013.7,214.1L1012.4,214.1L1007.2,217.1Z"/>
+<path id="state-Connecticut" class="state" data-name="Connecticut" d="M974.6,230.7L978.4,226.8L976.6,225.1L973.3,206.4L985.5,203.7L985.7,204.7L986.6,203.5L1003.8,199.4L1007.7,214.2L1006.9,214.6L1007.2,216.8L1005.5,216.8L1002.7,218.5L1001.3,218.3L1001.1,219.3L999.1,220.0L998.3,219.3L998.3,220.6L992.9,221.8L992.2,222.6L991.2,222.3L988.9,223.5L988.2,222.3L985.6,226.7L984.2,226.6L981.1,228.9L978.7,231.8L978.5,231.5L978.0,232.4L977.3,232.2L976.5,233.2L974.6,230.7Z"/>
+<path id="state-New_York" class="state" data-name="New York" d="M968.3,247.5L968.8,243.9L969.5,243.8L970.8,243.3L971.5,244.2L970.8,245.9L968.3,247.5Z M858.9,225.1L865.2,217.6L868.7,215.4L869.9,211.7L873.0,208.8L871.1,205.0L869.0,204.1L869.1,202.5L867.7,202.2L866.9,197.6L876.9,193.0L890.0,191.3L894.4,193.2L896.9,191.6L904.7,190.2L907.4,188.6L912.9,182.1L915.2,181.8L916.4,180.4L915.3,175.6L913.3,173.4L914.6,172.0L914.3,173.0L915.1,173.1L916.8,169.3L914.5,170.3L915.5,168.5L913.9,167.6L912.8,168.8L912.8,169.4L914.2,168.9L913.1,170.8L912.3,168.4L910.8,167.7L911.3,165.1L913.1,164.3L913.5,162.5L917.4,159.4L919.2,155.3L925.8,145.3L932.8,139.4L934.6,139.7L958.4,133.5L958.7,137.7L959.9,138.9L959.9,143.3L962.6,147.2L962.3,149.2L963.3,151.6L962.4,153.7L962.4,157.5L965.6,163.7L965.3,168.6L966.0,168.9L966.1,167.4L967.2,167.1L968.9,169.1L973.2,188.4L972.8,205.6L976.6,225.1L978.4,226.8L974.6,230.7L976.6,233.3L975.3,235.0L974.5,237.6L975.9,238.9L975.6,237.2L976.6,237.5L975.9,236.4L977.6,237.0L977.5,235.1L979.4,234.2L979.3,235.3L980.0,234.7L980.7,235.3L979.9,233.4L981.4,234.1L982.5,233.6L981.5,233.8L981.5,232.7L984.8,233.2L986.4,231.0L995.2,228.7L1000.6,222.7L1001.4,222.5L1000.6,223.9L999.9,223.6L1000.3,224.6L1001.6,225.5L1003.5,224.8L1004.8,226.0L1007.0,223.3L1008.8,222.9L989.4,238.3L980.5,242.8L976.7,243.4L973.9,245.2L973.9,244.4L972.4,244.8L971.6,243.7L972.0,241.6L971.3,240.3L972.1,233.9L955.5,228.5L954.3,226.9L951.4,227.3L950.9,226.5L949.5,226.6L947.2,223.9L946.8,220.2L945.7,219.9L946.1,218.8L944.0,217.8L942.4,218.3L941.7,216.6L939.9,215.4L860.0,231.1L858.9,225.1Z"/>
+<path id="state-New_Jersey" class="state" data-name="New Jersey" d="M949.0,274.5L950.8,269.7L955.4,266.5L955.3,264.6L961.7,258.2L955.9,253.2L954.0,253.1L953.2,250.0L950.9,249.9L950.3,248.7L949.7,245.4L951.7,242.0L949.6,239.3L952.0,236.2L953.9,229.8L955.5,228.5L972.1,233.9L971.4,241.5L970.5,243.3L968.8,243.8L968.1,248.0L969.6,248.9L970.9,248.2L973.6,248.7L973.1,247.0L973.8,247.9L975.6,265.2L974.1,270.8L972.8,272.3L973.1,274.0L968.8,280.0L965.8,288.6L963.8,289.0L963.9,283.0L961.3,283.0L961.1,282.3L959.0,283.6L956.6,281.3L955.9,281.7L950.4,278.6L950.2,275.6L949.0,274.5Z"/>
+<path id="state-Pennsylvania" class="state" data-name="Pennsylvania" d="M855.5,290.1L846.2,234.0L851.8,230.1L852.9,228.0L853.9,228.4L858.8,224.4L860.0,231.1L939.9,215.4L941.7,216.6L942.4,218.3L944.0,217.8L946.1,218.8L945.7,219.9L946.8,220.2L947.2,223.9L949.5,226.6L950.9,226.5L951.4,227.3L954.3,226.9L955.5,228.3L953.9,229.8L952.0,236.2L949.6,239.3L951.7,242.0L949.7,245.4L949.8,246.9L950.7,249.8L953.2,250.0L954.0,253.1L955.9,253.2L961.7,258.2L955.3,264.6L955.4,266.5L950.8,269.7L946.5,269.9L944.5,273.1L911.6,280.0L855.5,290.1Z"/>
+<path id="state-Delaware" class="state" data-name="Delaware" d="M952.8,303.9L944.2,273.2L946.1,270.2L948.3,269.3L950.6,269.6L948.1,274.9L949.3,276.2L949.3,278.6L953.9,283.0L955.0,287.7L957.0,289.3L957.7,291.1L961.1,293.5L962.3,292.9L965.0,301.4L952.8,303.9Z"/>
+<path id="state-Maryland" class="state" data-name="Maryland" d="M877.4,299.6L875.1,286.7L944.2,273.2L952.8,303.9L965.0,301.4L965.1,303.8L963.7,312.6L956.6,315.1L956.2,316.2L954.3,315.7L952.0,318.2L951.6,315.2L952.2,315.1L953.3,313.6L951.3,314.1L952.6,312.0L950.0,312.4L949.9,313.5L949.4,312.9L949.5,311.6L951.8,309.4L950.2,310.4L949.5,309.6L950.3,306.8L949.2,307.6L949.2,310.1L948.7,310.6L947.4,308.9L948.3,307.7L947.2,307.2L946.6,309.2L947.6,311.3L946.6,310.5L946.1,310.6L945.9,310.4L946.5,310.1L945.8,309.5L945.1,310.4L945.2,309.4L943.9,309.4L944.6,309.0L943.0,307.6L943.5,309.7L945.6,311.2L943.3,309.6L940.5,305.9L942.4,304.2L941.3,304.4L940.6,302.2L942.8,301.7L943.2,302.4L945.9,302.6L942.4,300.1L941.7,300.5L941.1,298.6L940.5,300.1L939.8,299.2L939.3,299.5L939.4,301.3L939.0,298.8L940.0,296.2L941.1,297.9L942.1,298.6L942.4,298.0L941.3,297.5L940.4,294.0L939.6,293.6L939.8,294.8L938.2,295.2L938.0,297.3L937.6,294.8L938.1,292.1L939.4,293.4L941.0,292.5L940.4,291.4L940.9,290.1L939.8,290.5L940.2,292.3L939.6,292.3L938.0,288.8L939.1,284.3L940.1,283.1L942.4,282.4L941.2,282.3L942.3,280.3L941.5,280.7L941.9,277.0L941.1,278.6L939.5,279.0L939.1,280.3L940.6,281.0L938.0,284.1L937.1,281.4L937.2,285.5L936.3,283.5L935.3,283.5L936.2,285.4L934.8,285.8L935.4,286.5L934.5,287.3L935.4,287.6L934.7,288.8L931.7,287.7L933.8,290.0L935.3,290.3L935.5,292.3L936.6,293.1L935.1,294.3L935.9,295.9L934.9,295.8L935.4,296.5L934.7,297.7L935.7,297.7L934.7,299.9L937.1,306.1L940.1,308.5L939.6,310.3L938.6,310.6L940.6,310.6L940.4,311.7L942.5,314.3L943.0,316.8L940.1,314.3L939.8,315.8L936.9,313.5L933.3,313.9L931.8,311.2L931.0,311.6L931.9,313.5L930.2,313.0L927.7,309.5L924.4,312.4L923.5,312.0L922.6,309.6L922.9,307.7L925.0,305.4L924.3,304.3L925.8,303.0L925.5,301.1L927.5,298.0L924.5,296.0L923.3,297.8L920.7,297.1L919.4,295.7L916.1,295.6L914.5,294.1L915.4,291.8L913.0,290.3L909.2,290.2L909.3,288.6L907.9,287.9L908.3,286.4L906.8,286.6L907.0,285.7L906.4,286.2L905.7,285.3L906.7,284.9L906.4,283.9L904.4,283.9L904.5,284.8L899.7,282.9L898.3,285.1L895.2,285.6L896.1,286.4L894.9,286.6L895.8,287.4L895.0,287.5L895.0,288.4L893.1,288.6L889.2,287.7L889.6,286.8L888.7,286.8L888.8,286.1L886.1,291.9L883.2,291.6L882.5,293.9L877.4,299.6Z"/>
+<path id="state-Virginia" class="state" data-name="Virginia" d="M952.8,334.7L952.9,326.0L954.7,322.4L954.0,322.5L954.7,321.6L954.0,320.9L955.6,320.6L956.4,318.9L955.9,317.7L954.8,317.9L954.5,317.9L956.5,316.6L956.6,315.1L963.7,312.6L962.5,316.8L962.2,317.3L961.6,317.0L962.3,316.5L961.3,316.5L959.6,319.5L959.3,325.5L958.1,328.2L958.8,328.7L957.0,333.0L957.0,336.1L956.0,337.8L954.7,338.1L955.2,338.8L954.5,338.8L952.8,334.7Z M806.0,376.8L808.6,374.8L816.1,371.9L817.0,368.9L820.7,367.5L820.6,365.3L823.2,363.2L823.0,361.3L829.7,356.6L836.2,348.8L837.1,349.3L835.9,350.5L837.2,351.2L837.7,353.2L843.1,356.3L845.5,355.8L848.8,352.0L851.8,354.1L857.0,351.7L858.7,350.2L857.9,349.3L858.2,348.1L860.2,349.3L864.0,346.1L864.8,345.7L865.7,347.1L868.6,344.6L869.0,343.7L868.0,343.1L869.8,341.2L868.1,339.8L869.9,334.8L872.5,331.3L873.3,326.3L875.4,323.8L874.9,322.9L876.2,321.2L876.7,315.3L879.0,316.0L880.6,318.1L884.5,318.4L888.0,306.8L890.9,308.4L891.9,305.1L894.5,302.1L895.0,302.5L897.8,296.8L897.0,296.1L898.2,292.1L897.5,289.2L908.9,295.6L909.9,290.7L913.0,290.3L915.4,291.9L914.8,294.7L916.2,295.7L920.4,296.0L920.7,297.1L922.6,297.2L925.1,299.1L925.8,302.9L924.5,304.0L924.6,305.3L923.3,306.0L923.2,305.1L922.4,305.0L921.7,310.1L922.2,312.2L924.0,313.2L927.4,310.7L928.3,312.3L927.5,312.8L929.6,314.0L929.9,315.0L934.0,315.4L934.7,316.1L935.1,315.3L936.5,316.0L936.9,315.3L939.2,317.4L938.6,318.1L945.4,320.2L945.2,322.0L944.3,322.3L945.0,322.9L944.6,326.3L946.0,327.1L944.5,327.6L942.4,326.9L942.0,325.9L941.4,327.3L939.3,324.5L936.3,323.4L932.7,320.3L931.7,320.5L934.7,322.2L936.6,324.6L938.9,325.3L940.9,328.1L945.9,328.5L944.9,329.8L945.9,330.5L946.4,329.6L947.0,330.4L946.1,330.3L947.5,331.4L947.7,334.6L944.5,332.5L944.8,333.7L943.6,333.9L946.3,335.8L943.5,337.3L945.9,337.1L945.8,338.8L947.2,338.3L948.1,339.1L948.9,340.1L948.7,342.3L947.9,342.1L946.5,343.7L943.2,340.7L943.4,341.5L941.8,340.6L942.0,339.5L940.9,338.3L938.8,338.9L939.1,339.5L936.4,338.2L935.1,339.3L938.0,339.3L939.6,340.5L940.3,339.0L941.4,342.6L945.3,344.1L945.9,346.1L947.6,344.6L949.0,345.2L948.8,342.7L953.3,343.8L955.1,343.0L959.6,351.6L907.9,362.2L876.3,367.8L845.5,371.6L846.0,370.9L806.0,376.8Z"/>
+<path id="state-West_Virginia" class="state" data-name="West Virginia" d="M820.8,334.9L821.8,332.4L821.1,330.4L820.9,328.5L822.0,328.8L825.9,327.2L826.1,323.7L828.2,322.8L826.7,318.3L828.0,316.8L827.8,315.4L829.4,311.9L831.5,312.5L832.6,315.2L833.7,313.3L835.0,313.6L833.4,309.9L834.6,309.3L834.2,307.2L835.2,304.7L837.4,304.5L837.3,302.7L839.0,300.6L840.8,302.1L843.6,300.5L847.5,294.7L849.1,293.7L849.6,291.2L848.7,290.0L849.8,287.3L849.3,286.1L850.2,286.0L849.9,281.9L851.5,275.5L850.6,273.8L851.0,271.5L849.2,269.2L849.8,268.0L851.7,267.2L855.5,290.1L875.1,286.7L877.2,299.5L882.5,293.9L883.2,291.6L886.1,291.9L888.8,286.1L888.7,286.8L889.6,286.9L888.8,287.3L890.7,288.4L894.9,288.4L895.0,287.5L895.8,287.4L894.9,286.6L896.1,286.4L895.2,285.6L898.3,285.1L899.8,282.9L904.5,284.8L904.4,283.9L906.4,283.9L906.7,284.9L905.7,285.3L906.3,286.2L908.3,286.4L907.9,287.9L908.9,288.1L909.2,290.2L910.0,290.5L908.9,295.6L897.5,289.2L898.2,292.1L897.0,296.1L897.8,296.8L895.0,302.5L894.5,302.1L891.9,305.1L890.9,308.4L888.0,306.8L884.5,318.4L880.6,318.1L879.0,316.0L876.7,315.3L876.2,321.2L874.9,322.9L875.4,323.8L873.3,326.3L872.5,331.3L869.9,334.8L868.1,339.8L869.8,341.2L868.0,343.1L868.8,344.4L865.7,347.1L864.8,345.7L860.2,349.3L858.2,348.1L857.9,349.3L858.7,350.2L857.9,351.1L851.8,354.1L848.8,352.0L845.5,355.8L843.1,356.3L837.6,353.1L837.2,351.2L835.9,350.4L836.7,348.9L832.9,348.9L831.8,346.6L831.1,347.3L829.2,346.3L828.7,344.1L826.8,343.2L826.2,341.4L824.4,340.4L825.0,339.1L823.9,338.8L820.8,334.9Z"/>
+<path id="state-North_Carolina" class="state" data-name="North Carolina" d="M798.2,418.8L798.1,412.7L799.3,411.5L800.1,412.1L802.7,411.0L802.9,407.4L805.4,404.4L807.4,403.0L812.9,402.3L819.0,396.3L822.3,395.7L823.9,392.8L823.2,391.6L824.1,390.9L825.5,391.3L825.8,389.4L828.4,387.4L829.4,388.1L829.2,389.8L830.3,390.0L833.8,385.3L836.4,383.9L837.8,383.9L838.4,385.0L840.2,384.3L842.0,379.4L844.0,377.6L845.8,378.0L844.9,376.2L845.5,371.6L888.3,365.8L959.6,351.6L963.1,359.1L970.3,369.2L967.1,365.1L965.2,364.4L965.4,363.5L964.8,363.6L963.4,359.7L961.1,357.2L960.7,354.7L959.3,353.5L957.5,353.5L957.0,352.5L956.7,354.0L958.6,355.7L959.1,354.9L963.6,363.1L960.1,359.4L959.2,359.3L960.5,361.4L954.7,359.1L957.9,362.5L955.5,363.4L953.4,362.2L955.6,363.9L954.8,364.3L950.0,362.9L953.4,364.7L951.4,365.5L949.7,367.7L948.4,367.9L947.7,366.9L946.9,367.6L945.9,367.0L944.7,363.8L945.3,361.8L944.7,361.6L944.2,364.5L946.5,368.8L945.9,370.1L949.3,369.5L952.1,367.8L953.0,368.9L956.6,366.6L958.9,366.3L959.9,366.9L959.5,370.1L961.0,374.6L960.7,368.4L961.8,367.0L961.1,366.5L963.3,365.8L966.2,368.9L967.1,372.1L965.9,372.6L967.1,373.8L966.1,375.4L964.1,375.1L962.6,380.3L961.7,379.9L961.8,381.5L960.3,383.0L958.3,382.4L957.8,383.1L956.2,382.2L956.6,383.4L955.2,383.6L954.9,382.9L956.0,382.7L955.0,381.4L954.4,382.6L953.5,382.4L953.8,383.2L952.5,382.7L950.9,380.3L952.9,379.9L953.0,378.6L949.8,380.4L951.7,383.2L944.8,382.8L941.5,381.5L943.7,383.7L944.5,383.1L950.3,384.7L953.9,384.7L954.3,385.4L954.2,387.1L952.7,387.1L953.7,388.0L952.4,387.8L951.6,388.7L953.6,388.8L953.3,390.3L949.3,394.6L945.1,392.8L943.3,391.1L946.6,394.9L950.4,395.6L952.1,393.5L955.6,392.7L955.5,390.4L957.0,393.4L959.0,392.6L957.7,391.0L960.3,391.7L959.1,391.9L959.9,393.0L958.7,393.4L959.4,394.0L958.3,395.5L957.7,394.9L956.4,399.4L955.1,399.6L954.2,398.1L954.3,400.2L949.7,400.5L944.3,402.8L941.3,407.0L936.5,411.6L932.7,418.5L931.5,426.9L929.0,425.9L925.5,426.2L919.7,428.9L892.5,409.4L869.9,412.8L869.7,409.9L866.0,406.1L864.1,408.0L863.6,405.4L836.8,408.7L836.3,407.9L835.5,409.3L830.8,410.9L829.5,412.6L822.6,415.3L798.2,418.8Z"/>
+<path id="state-South_Carolina" class="state" data-name="South Carolina" d="M818.7,423.4L819.3,420.3L822.8,416.9L822.6,415.3L829.5,412.6L830.8,410.9L835.5,409.3L836.3,407.9L836.8,408.7L863.6,405.4L864.1,408.0L866.0,406.1L869.7,409.9L869.9,412.8L892.5,409.4L919.7,428.9L916.4,430.8L912.6,435.6L909.6,442.2L909.5,448.1L907.0,450.6L906.7,452.8L903.2,452.6L902.4,453.4L901.7,455.1L902.6,456.1L900.1,459.1L897.8,460.8L896.1,460.4L896.1,461.1L897.4,461.2L897.3,462.6L895.2,465.0L892.8,465.8L888.9,469.3L885.9,469.3L886.0,470.6L887.4,471.5L887.0,473.6L883.6,475.8L881.2,474.6L880.7,475.5L883.0,476.9L878.5,482.2L876.5,480.9L874.0,480.9L872.7,477.9L872.9,475.5L871.0,473.6L871.2,472.5L865.8,469.2L865.1,464.5L862.9,461.9L862.8,460.0L857.1,457.5L856.3,455.7L854.5,455.2L854.4,453.7L852.3,453.1L852.2,450.1L846.2,447.0L842.7,442.4L837.5,440.0L833.5,435.3L832.5,432.5L828.9,427.6L825.9,427.9L823.0,425.3L821.5,425.3L818.7,423.4Z"/>
+<path id="state-Georgia" class="state" data-name="Georgia" d="M772.2,421.9L822.8,415.3L822.8,416.9L819.3,420.4L819.0,423.8L823.0,425.3L825.9,427.9L828.6,427.5L829.6,428.2L833.5,435.3L837.5,440.0L842.7,442.4L846.2,447.0L852.2,450.1L852.3,453.1L854.4,453.7L854.5,455.2L856.3,455.7L857.1,457.5L862.8,460.0L862.9,461.9L865.1,464.5L865.8,469.2L871.2,472.5L871.0,473.6L872.9,475.5L872.7,477.9L874.0,480.9L880.2,482.3L879.6,484.1L877.5,484.8L878.8,485.5L877.6,486.9L876.1,486.7L876.0,487.9L876.9,488.2L875.9,489.9L873.8,491.0L875.4,491.4L875.7,493.0L875.1,494.9L873.2,495.4L875.1,496.0L873.2,500.0L874.2,502.6L871.7,506.5L871.9,509.1L870.5,510.3L872.5,510.5L872.6,516.8L869.0,517.2L861.4,515.5L861.1,516.8L860.0,516.7L859.8,518.2L861.2,522.2L861.2,526.9L858.6,527.8L856.3,523.6L856.7,522.7L799.7,526.6L798.6,525.8L795.1,517.5L793.2,515.4L793.6,506.5L791.4,502.8L790.6,499.3L792.0,494.5L791.5,491.8L794.7,488.2L792.0,486.8L792.7,484.3L789.1,479.1L788.3,476.0L786.8,473.9L772.2,421.9Z"/>
+<path id="state-Florida" class="state" data-name="Florida" d="M887.4,668.7L889.3,667.4L888.3,666.9L888.6,666.1L894.9,661.4L896.7,661.9L898.9,664.7L896.7,665.9L896.2,665.3L894.1,665.4L893.9,666.4L890.4,668.4L887.4,668.7Z M740.2,528.9L740.7,525.5L796.0,519.8L798.6,525.7L799.7,526.6L856.7,522.7L856.3,523.6L858.6,527.8L861.2,526.9L861.2,522.2L859.8,518.2L860.0,516.7L861.1,516.8L861.4,515.5L869.0,517.2L873.0,516.9L873.4,522.0L880.7,540.0L888.9,553.7L899.6,566.1L901.2,569.0L899.9,571.9L901.6,577.7L907.2,586.2L918.8,607.9L920.9,633.4L920.7,635.9L920.5,634.5L919.3,634.1L917.5,637.8L917.3,641.2L918.5,643.3L916.8,646.3L916.7,648.3L918.1,647.8L918.4,646.4L917.5,646.0L919.9,644.3L917.5,650.5L916.9,650.6L914.3,654.7L912.5,656.5L916.7,650.5L915.6,648.1L911.4,649.3L911.9,649.6L911.1,650.7L911.5,650.0L911.0,649.8L910.4,650.7L909.7,650.2L910.0,650.7L908.9,650.5L908.9,650.9L908.8,651.1L908.6,650.4L908.3,651.0L907.9,650.1L901.8,652.7L899.5,650.5L900.0,646.5L895.1,639.5L889.0,636.3L886.3,635.7L885.7,637.1L884.4,635.7L879.5,624.7L874.7,621.1L874.9,622.5L873.8,622.9L871.4,618.1L872.6,617.7L873.8,618.6L873.6,613.5L872.4,612.3L873.3,611.5L871.9,611.2L871.5,612.2L870.5,612.1L871.9,615.7L869.6,616.5L869.5,617.7L868.7,615.3L860.8,604.5L855.9,599.1L856.9,599.9L858.2,599.1L862.6,590.4L860.8,588.4L860.2,589.0L860.9,591.2L859.5,591.2L858.8,588.1L855.5,586.8L855.1,589.2L857.2,589.6L858.4,591.7L857.7,594.7L856.0,594.9L856.6,596.5L855.9,597.3L855.4,594.6L852.5,591.4L852.5,586.8L853.1,588.7L853.2,586.7L852.4,586.6L852.1,586.4L852.0,585.7L853.3,586.5L852.4,583.6L854.5,574.2L853.9,570.7L852.4,570.1L852.7,568.1L851.6,567.4L852.2,564.7L850.6,563.5L850.3,561.8L849.1,561.5L848.8,559.3L844.8,559.5L843.6,560.8L842.8,557.8L840.7,557.2L839.2,554.1L834.9,552.3L834.2,548.6L830.1,546.8L829.9,545.3L827.5,543.1L820.0,539.6L816.6,540.7L815.7,539.7L815.8,540.5L814.5,540.2L812.6,542.6L813.2,543.7L811.0,543.5L811.1,544.2L813.3,544.3L813.2,545.5L809.5,545.5L802.1,551.2L802.1,549.3L799.9,551.7L792.3,553.8L791.5,553.0L790.7,551.1L790.4,549.9L790.5,548.9L792.1,553.5L793.0,553.0L793.0,550.4L790.4,547.2L788.2,546.7L779.4,541.4L772.4,539.1L761.0,538.8L744.0,543.2L745.4,542.6L744.2,542.1L746.9,539.1L745.0,537.4L745.8,533.8L740.2,528.9Z"/>
+<path id="state-Tennessee" class="state" data-name="Tennessee" d="M676.8,429.5L677.1,428.5L678.9,428.6L679.6,426.2L681.5,425.8L680.4,424.6L681.1,423.6L679.2,422.4L680.4,421.7L680.9,419.6L679.8,419.0L679.7,419.9L678.8,419.7L680.3,417.3L681.0,417.6L681.0,419.0L681.3,419.5L681.6,419.3L681.5,415.3L684.1,416.0L683.0,414.3L685.0,412.5L683.4,412.5L682.8,410.7L687.7,408.3L686.3,407.2L686.8,406.1L688.8,406.3L686.8,403.7L689.4,399.8L687.0,397.7L690.4,397.1L688.5,395.5L690.6,394.4L689.9,391.0L690.9,390.9L691.3,391.9L692.3,390.8L694.6,390.4L719.4,388.7L718.7,384.2L723.1,384.2L723.1,385.0L794.2,378.6L846.0,370.9L844.9,376.2L845.8,378.0L844.0,377.6L842.0,379.4L840.2,384.3L838.4,385.0L837.8,383.9L836.4,383.9L833.8,385.3L830.3,390.0L829.2,389.8L829.4,388.1L828.4,387.4L825.8,389.4L825.5,391.3L824.1,390.9L823.2,391.6L823.9,392.8L822.3,395.7L819.0,396.3L812.9,402.3L807.4,403.0L805.4,404.4L802.9,407.4L802.7,411.0L800.1,412.1L799.3,411.5L798.1,412.7L798.2,418.8L747.3,424.3L676.8,429.5Z"/>
+<path id="state-Kentucky" class="state" data-name="Kentucky" d="M692.3,390.8L693.1,387.5L695.8,388.8L697.1,386.2L696.2,384.5L697.7,383.8L696.4,382.1L697.8,378.7L696.0,376.7L698.7,372.3L700.9,371.8L708.1,375.0L710.2,374.9L710.7,372.9L708.7,369.7L709.2,367.1L717.1,363.9L714.9,359.7L717.2,356.0L718.7,356.6L719.5,355.6L718.7,353.8L719.3,352.6L720.9,353.7L723.8,352.8L723.9,354.5L724.8,354.6L725.6,353.7L724.7,352.2L725.4,350.8L727.0,352.4L729.5,351.5L734.0,353.5L735.1,354.8L736.4,351.6L740.3,348.8L742.3,351.3L743.9,350.8L744.2,352.4L745.0,350.3L746.6,349.9L746.0,347.3L747.7,346.1L746.9,345.1L749.6,344.4L748.5,343.7L748.7,342.9L750.6,344.3L751.0,346.4L754.4,347.2L755.6,348.3L755.7,347.4L757.6,346.5L757.6,343.0L758.8,339.9L761.6,339.1L762.7,335.4L766.0,332.7L765.2,327.7L768.2,327.1L770.4,328.2L773.6,325.5L777.0,324.9L776.6,323.9L777.3,322.5L775.4,322.0L776.1,320.4L774.6,318.3L777.1,315.8L779.8,317.3L783.0,315.8L783.6,317.4L786.1,318.2L788.5,323.0L795.1,323.3L797.5,325.7L799.3,326.1L802.1,323.9L805.4,324.7L806.8,326.0L809.6,324.9L811.5,322.0L814.2,321.0L815.5,324.9L818.4,325.7L820.6,327.6L821.8,332.4L820.8,335.0L825.0,339.1L824.4,340.4L826.2,341.4L826.8,343.2L828.7,344.1L829.2,346.3L831.1,347.3L831.8,346.6L832.9,348.9L836.3,348.6L829.7,356.6L823.0,361.3L823.2,363.2L820.6,365.3L820.7,367.5L817.0,368.9L816.1,371.9L808.6,374.8L805.7,377.3L723.1,385.0L723.1,384.2L718.7,384.2L719.4,388.7L692.3,390.8Z"/>
+<path id="state-Alabama" class="state" data-name="Alabama" d="M720.2,504.7L721.9,429.1L719.5,426.3L772.2,421.9L786.8,473.9L788.3,476.0L789.1,479.1L792.7,484.3L792.0,486.8L794.7,488.2L791.5,491.8L792.0,494.5L790.6,498.8L791.4,502.8L793.6,506.5L793.2,515.4L796.0,519.8L740.7,525.5L740.2,528.9L742.6,531.7L745.5,533.2L745.9,534.7L745.0,537.4L746.9,539.1L744.2,542.1L745.4,542.6L738.0,545.0L733.1,545.6L738.9,543.7L735.4,540.8L734.5,539.0L734.8,535.6L733.1,534.2L731.5,535.2L730.6,543.6L729.3,543.5L729.4,542.4L726.7,542.5L726.1,541.7L724.9,542.6L720.2,504.7Z"/>
+<path id="state-Mississippi" class="state" data-name="Mississippi" d="M653.7,525.0L656.7,524.1L655.4,520.6L657.5,521.8L656.2,518.1L658.7,516.3L656.9,516.5L656.3,515.3L658.7,515.5L659.2,512.4L661.4,512.0L659.3,512.0L659.6,509.9L660.7,509.4L661.5,510.6L661.2,509.3L663.0,507.9L662.8,506.7L665.1,505.3L663.2,504.0L664.9,504.5L666.4,502.1L665.2,501.2L665.4,502.6L663.1,502.5L663.0,500.9L665.6,499.6L666.5,500.8L666.7,498.2L667.9,498.1L668.8,496.2L668.1,497.0L666.4,496.7L666.8,494.6L665.0,494.7L663.6,493.6L664.0,492.0L665.3,493.4L666.3,493.2L664.3,491.8L665.7,490.6L665.6,489.6L663.4,491.1L662.7,490.1L664.6,487.7L662.3,487.0L662.6,484.7L664.2,483.1L663.6,481.3L662.6,481.2L662.3,483.2L661.0,482.6L662.8,479.3L661.0,477.7L663.3,477.2L663.2,475.1L664.1,474.0L663.5,473.5L662.9,474.6L662.0,472.5L663.6,469.5L662.0,471.2L660.5,470.7L662.3,469.3L661.3,468.3L661.1,469.6L659.9,469.8L660.9,468.2L659.8,466.8L661.9,465.5L659.8,463.8L661.1,463.0L662.6,464.2L663.8,463.6L661.4,462.4L661.6,461.1L664.6,460.9L662.7,459.1L663.9,457.3L662.3,456.2L663.7,455.4L664.8,456.4L664.3,455.0L666.2,454.7L666.6,453.3L664.8,452.0L667.8,451.2L665.6,450.5L665.1,449.4L666.9,450.1L667.2,448.4L668.9,447.6L668.4,446.1L670.2,445.8L669.9,447.0L670.6,447.2L670.6,445.7L672.3,444.5L671.8,442.7L672.7,441.2L671.6,438.2L672.3,437.5L672.8,439.2L674.1,438.0L671.9,436.8L672.7,434.8L672.9,436.6L674.2,436.3L673.5,432.7L674.3,432.6L674.9,433.9L677.0,433.4L678.2,431.1L676.8,429.7L719.6,426.6L721.9,429.1L720.2,504.7L725.1,543.1L723.8,543.0L723.2,544.0L720.3,542.9L717.8,543.9L714.9,541.9L714.9,542.9L711.9,543.2L705.9,545.7L706.2,544.8L704.7,544.0L704.1,544.6L705.1,545.5L703.1,547.1L702.7,548.8L700.0,549.2L698.1,546.6L698.4,545.3L697.1,542.6L694.3,540.3L693.1,537.6L695.2,528.9L654.4,531.3L656.0,529.9L654.5,528.4L655.2,526.4L653.7,525.0Z"/>
+<path id="state-Ohio" class="state" data-name="Ohio" d="M775.9,317.0L768.5,252.1L793.3,248.1L793.1,249.1L795.6,248.4L803.6,252.2L805.2,250.1L806.3,251.2L807.7,251.1L807.8,252.4L807.6,251.8L807.1,251.8L803.3,253.0L801.9,253.8L802.6,254.5L803.1,253.8L804.2,254.6L806.0,252.9L812.5,254.4L820.7,249.7L825.8,249.7L833.1,241.5L846.2,234.0L851.7,267.2L849.2,269.1L851.0,271.5L850.6,273.8L851.5,275.5L849.9,281.9L850.2,286.0L849.3,286.1L849.8,287.3L848.7,290.0L849.6,291.4L849.1,293.7L847.5,294.7L843.6,300.5L840.8,302.1L839.0,300.6L837.3,302.7L837.4,304.5L835.1,304.9L834.2,307.2L834.7,309.2L833.4,309.9L835.0,313.6L833.7,313.3L832.6,315.2L831.5,312.5L829.4,311.9L827.8,315.4L828.0,316.8L826.7,318.3L828.2,322.8L826.1,323.7L825.9,327.2L821.2,328.8L818.5,325.8L815.5,324.9L814.0,320.9L811.4,322.1L809.6,324.9L806.8,326.0L805.4,324.7L802.1,323.9L800.1,324.8L799.7,326.1L797.6,325.8L795.3,323.3L788.5,323.0L786.1,318.2L783.6,317.4L782.9,315.7L780.1,317.3L777.3,315.7L775.9,317.0Z"/>
+<path id="state-Indiana" class="state" data-name="Indiana" d="M715.6,353.5L717.3,353.6L716.1,352.9L717.1,351.8L716.4,349.7L717.8,349.2L717.9,348.3L716.8,348.4L718.7,346.7L717.4,345.9L717.0,344.4L717.6,344.9L717.9,343.4L718.5,344.0L719.2,342.8L719.8,343.5L721.4,340.2L721.1,338.7L723.0,337.6L722.5,336.7L723.6,335.4L723.3,334.2L725.5,331.4L724.1,328.5L724.6,326.1L723.3,325.5L723.3,323.6L721.5,321.8L722.9,319.6L721.8,317.5L723.4,316.1L718.3,257.0L719.3,257.8L720.3,257.4L720.3,258.5L722.6,258.9L726.3,257.7L731.1,254.5L768.3,250.5L775.9,317.0L774.6,318.3L776.1,320.4L775.4,322.0L777.3,322.5L776.6,323.9L777.0,324.9L773.6,325.5L770.4,328.2L768.2,327.1L765.2,327.7L766.0,332.7L762.7,335.4L761.6,339.1L758.8,339.9L757.6,343.0L757.6,346.5L755.5,348.3L754.4,347.2L751.0,346.4L750.6,344.3L748.7,342.9L748.5,343.7L749.6,344.4L746.9,345.1L747.7,346.1L746.0,347.3L746.6,349.9L745.0,350.3L744.2,352.4L743.9,350.8L742.3,351.3L740.3,348.8L736.4,351.6L735.1,354.8L734.0,353.5L729.5,351.5L727.0,352.4L725.4,350.8L724.7,352.2L725.6,353.5L725.2,354.5L724.0,354.6L723.8,352.8L720.9,353.7L719.5,352.5L718.7,353.7L719.6,355.4L718.7,356.6L715.9,355.6L717.1,355.0L715.6,353.5Z"/>
+<path id="state-Illinois" class="state" data-name="Illinois" d="M646.1,300.5L646.9,296.4L648.5,294.9L647.7,291.0L648.9,289.5L652.9,287.9L653.3,284.0L655.6,281.3L655.7,276.9L652.3,273.4L653.4,269.0L660.6,267.4L662.3,265.8L664.1,265.7L666.2,263.9L666.6,260.0L668.9,258.2L668.7,250.5L664.4,248.0L663.7,245.4L659.3,242.1L659.3,241.1L711.4,237.8L711.4,243.4L714.5,248.0L718.2,256.6L723.4,316.1L721.8,317.5L722.9,319.6L721.5,321.8L723.3,323.6L723.3,325.5L724.6,326.1L724.1,328.5L725.5,331.4L723.3,334.2L723.6,335.4L722.5,336.7L723.0,337.6L721.1,338.7L721.4,340.2L719.8,343.5L719.2,342.8L718.5,344.0L717.9,343.4L717.6,344.9L717.0,344.4L717.4,345.9L718.7,346.7L716.8,348.4L718.0,348.7L716.4,349.9L717.1,351.8L716.1,352.9L717.3,353.6L715.6,353.5L717.1,355.0L715.9,355.6L717.2,356.0L714.9,359.8L717.1,363.8L709.3,366.8L708.7,369.7L710.7,372.9L710.2,374.9L708.1,375.0L699.7,371.8L696.2,376.0L696.1,377.3L697.1,378.2L696.0,378.5L694.5,376.1L693.4,376.3L694.5,377.4L694.2,378.3L692.0,377.0L690.2,372.0L688.9,371.1L690.7,368.4L688.5,364.8L688.4,363.7L689.2,363.3L688.3,360.9L685.3,359.6L685.1,358.4L681.5,356.0L679.4,356.7L678.9,355.6L679.8,354.7L676.1,353.2L670.9,348.6L670.6,345.7L673.7,338.6L673.1,335.8L674.8,332.7L668.3,330.0L666.4,332.4L664.8,332.1L662.9,328.1L663.4,326.9L662.3,323.0L656.1,318.5L654.8,316.3L649.5,311.7L649.5,310.1L647.8,308.3L648.2,306.8L646.7,304.1L646.1,300.5Z"/>
+<path id="state-Michigan" class="state" data-name="Michigan" d="M742.7,156.4L743.3,152.4L744.5,152.4L745.0,156.0L743.9,157.1L742.7,156.4Z M731.1,254.5L734.9,250.2L738.5,241.3L739.9,235.2L739.1,223.5L731.7,207.6L733.1,202.1L731.0,196.5L734.7,188.9L735.0,183.3L734.1,180.2L736.9,178.7L736.8,174.6L738.3,174.5L739.1,172.7L741.3,173.0L744.0,166.7L745.3,166.0L745.2,167.9L744.8,167.4L744.2,168.2L745.3,170.2L744.0,172.0L744.8,171.6L744.3,175.2L744.7,177.1L745.5,177.1L746.4,173.8L745.7,173.9L747.0,171.3L747.0,174.7L745.9,177.3L746.8,177.5L748.7,172.2L748.2,163.7L750.8,161.6L755.7,160.1L753.0,159.1L751.8,157.0L752.3,154.5L754.3,152.4L752.9,151.2L756.6,151.2L757.8,150.0L762.9,152.8L767.2,152.7L769.8,155.9L772.5,155.6L778.8,158.4L780.7,157.9L782.9,159.9L782.5,160.7L785.8,165.7L783.6,164.7L782.7,165.3L782.4,166.1L783.1,168.4L785.4,169.3L786.7,173.6L786.9,182.8L785.1,185.4L784.5,184.7L783.5,185.6L783.4,190.7L781.8,191.1L781.8,192.5L779.1,192.8L778.4,193.6L777.7,199.0L779.0,201.0L783.2,202.4L786.6,198.0L787.1,196.3L786.0,196.8L786.4,195.1L787.4,195.6L788.2,194.5L788.2,193.7L787.0,193.5L792.7,190.6L794.3,188.7L798.6,190.1L801.6,195.0L805.2,208.6L807.9,213.7L807.3,223.9L804.8,226.5L805.0,224.6L803.9,224.7L805.2,222.6L803.9,222.3L802.1,223.6L801.9,224.5L802.9,224.9L801.3,226.9L801.5,230.0L801.0,231.3L798.0,233.3L798.1,237.7L796.9,239.9L797.6,240.3L793.3,246.0L793.3,248.1L768.5,252.1L768.3,250.5L731.1,254.5Z M675.1,105.8L676.4,104.1L682.8,100.5L685.3,98.1L688.7,96.8L684.9,101.6L679.5,104.6L681.0,104.9L676.9,106.8L675.7,106.2L676.1,105.3L675.1,105.8Z M657.5,139.5L664.1,136.4L667.9,132.5L674.2,131.5L677.4,129.5L679.0,127.4L681.6,127.0L682.9,124.4L693.7,114.9L700.7,113.7L702.2,114.3L702.4,115.3L698.2,116.0L698.6,117.3L694.0,121.1L694.0,122.4L692.2,124.3L690.7,127.1L690.3,132.5L691.9,129.5L695.9,126.7L693.8,130.5L694.8,128.7L697.1,127.8L701.7,128.1L705.8,130.5L706.0,131.8L707.6,133.7L708.9,135.0L709.9,134.9L710.4,137.1L714.6,136.9L716.4,135.7L718.9,137.9L721.0,136.7L722.9,138.2L725.6,134.4L730.6,130.9L741.8,129.6L745.9,127.2L751.0,126.1L750.0,128.4L750.0,132.4L750.8,133.5L752.2,133.1L754.3,133.9L757.4,132.6L758.5,134.2L760.3,133.5L761.0,131.7L765.9,130.4L767.3,137.1L766.6,138.2L765.4,137.6L764.5,138.8L768.9,139.9L768.3,141.1L771.7,143.3L770.1,144.5L765.2,144.0L765.5,144.9L763.5,145.7L762.4,145.1L762.4,144.3L763.0,144.4L762.5,144.1L760.7,145.1L760.3,143.8L758.3,143.3L757.2,146.1L758.1,148.4L757.3,148.8L752.2,145.1L746.4,143.7L743.4,143.9L740.6,147.7L737.1,147.9L736.8,149.1L734.0,148.2L730.5,149.1L729.6,152.9L725.8,155.4L725.5,158.3L723.5,156.5L724.9,154.5L724.7,153.8L726.0,153.9L726.1,151.0L725.3,150.9L724.3,152.5L721.9,152.1L722.0,154.3L719.1,157.2L718.4,151.3L717.2,153.7L717.4,156.3L715.2,158.3L713.4,163.8L709.2,171.1L709.5,172.5L706.8,170.7L707.7,165.7L707.1,165.3L706.1,166.4L703.7,166.4L705.1,162.7L704.2,161.2L705.2,160.4L704.2,158.9L704.9,158.1L703.1,156.5L698.5,155.5L699.5,153.8L698.8,152.6L691.4,150.8L688.8,151.8L681.2,148.6L663.0,144.9L661.1,140.8L659.3,140.6L659.0,139.7L658.0,140.3L657.5,139.5Z M771.9,143.6L772.4,142.2L773.2,143.2L775.1,141.6L775.1,140.7L774.2,140.5L774.7,140.0L776.8,140.1L779.0,142.4L777.7,144.4L776.3,143.4L774.9,144.3L774.0,143.8L773.7,144.4L771.9,143.6Z"/>
+<path id="state-Wisconsin" class="state" data-name="Wisconsin" d="M615.8,166.2L615.8,162.6L617.3,161.3L618.4,158.1L621.6,155.7L622.6,155.9L623.3,154.6L624.6,154.8L625.6,153.3L625.0,138.5L626.5,138.8L626.5,137.5L628.1,136.4L630.9,137.9L633.7,137.5L640.8,134.7L643.8,132.2L644.0,133.3L645.3,132.9L649.3,130.0L651.3,131.8L649.2,135.2L649.8,136.7L648.4,139.4L652.3,137.3L650.9,135.8L655.1,139.1L661.1,140.8L663.0,144.9L681.2,148.6L688.8,151.8L691.4,150.8L694.8,152.1L697.2,152.0L699.5,153.8L698.4,155.2L699.0,155.9L701.0,155.6L704.4,157.5L704.9,158.3L704.2,159.1L705.2,160.4L704.2,161.2L705.1,162.7L703.7,166.4L706.1,166.4L707.1,165.3L707.7,165.7L706.8,170.7L709.8,173.0L709.2,173.0L709.1,175.5L705.5,176.9L705.7,178.2L703.4,182.4L703.7,185.7L703.1,185.1L702.6,186.2L703.3,186.9L704.5,187.1L705.7,184.8L707.4,184.0L710.3,178.5L710.7,179.1L712.7,177.2L713.7,178.7L713.2,176.7L715.6,170.0L716.8,170.4L718.3,166.6L719.7,166.5L720.0,168.4L719.0,168.2L719.3,170.3L718.4,170.5L719.1,171.8L717.8,172.4L716.8,177.3L715.0,179.7L712.9,185.8L712.0,191.7L712.9,194.8L710.7,197.3L709.6,203.0L710.6,207.8L707.8,219.0L709.0,223.4L708.6,224.7L710.3,229.3L711.6,230.5L710.8,234.3L711.4,237.8L659.3,241.1L657.9,238.0L651.5,235.8L648.8,227.6L648.8,226.0L650.8,222.8L647.8,220.2L645.9,208.2L643.0,204.5L640.2,203.8L634.9,199.8L633.1,195.8L628.3,194.0L626.3,191.3L622.5,191.1L617.7,186.7L618.6,182.0L617.6,178.9L618.6,177.5L618.1,173.3L620.0,169.3L617.7,166.3L615.8,166.2Z"/>
+<path id="state-Washington" class="state" data-name="Washington" d="M115.5,37.8L118.4,34.2L119.5,34.3L119.2,35.6L120.3,37.4L118.0,37.0L117.4,38.0L116.1,38.0L118.0,39.1L117.8,43.9L118.6,42.1L120.6,44.3L119.6,47.4L118.7,44.9L117.4,45.1L116.8,43.3L117.6,40.3L116.5,40.0L115.5,37.8Z M114.1,27.0L115.9,25.5L119.0,27.7L117.2,28.7L116.3,26.2L116.2,28.7L114.9,27.0L114.9,27.9L114.3,28.1L114.1,27.0Z M111.1,27.0L112.8,26.9L114.4,29.6L113.4,30.2L114.0,31.6L111.5,29.7L111.1,27.0Z M83.4,29.8L85.8,26.2L85.0,24.7L85.9,24.7L95.5,33.5L99.9,34.8L105.6,37.9L109.8,37.3L109.0,37.8L110.1,40.1L112.3,40.3L112.2,42.9L113.3,41.9L112.8,40.2L115.2,39.9L114.0,41.0L114.7,42.7L114.8,41.6L116.0,41.2L115.7,43.3L114.7,43.0L115.2,44.4L114.5,45.5L115.3,45.4L115.8,46.7L114.3,46.8L111.5,50.7L110.8,50.3L112.2,46.9L111.5,48.1L111.1,47.5L109.3,51.1L107.8,51.5L103.1,56.8L105.2,57.5L108.2,56.7L105.3,57.3L104.0,56.2L107.9,52.2L112.0,51.2L113.2,49.0L116.2,47.6L116.0,45.4L117.3,46.5L117.2,50.5L115.7,50.3L115.8,54.6L114.6,54.9L115.1,56.2L112.5,60.2L112.7,61.4L111.8,61.9L110.2,60.7L112.0,58.7L111.0,58.8L108.2,63.1L107.7,61.0L109.3,58.5L108.9,57.2L108.5,59.1L107.3,60.0L106.8,64.0L107.5,62.6L108.8,65.1L111.2,63.7L113.0,61.5L112.9,60.6L114.3,62.4L114.8,61.1L116.8,60.9L116.7,55.0L118.2,54.8L117.1,52.9L118.4,51.9L118.7,49.6L123.0,45.3L121.4,42.3L121.8,39.6L120.7,39.2L119.9,40.4L121.0,43.9L119.1,41.3L119.5,38.4L121.7,39.0L122.2,37.9L120.3,34.3L119.8,34.4L120.6,33.6L118.4,33.6L118.8,31.5L120.3,31.6L120.2,33.1L120.7,32.3L122.1,33.4L122.1,31.0L121.3,30.4L122.6,31.4L123.6,30.6L122.7,28.7L123.6,26.7L123.1,25.9L120.5,26.3L121.3,25.2L120.3,24.8L120.6,23.4L119.7,21.9L120.7,21.1L119.6,20.6L121.0,19.5L165.3,31.7L213.4,43.3L198.5,107.2L199.8,112.3L198.4,114.0L199.0,116.5L163.9,108.1L161.1,109.2L153.0,107.5L151.4,108.7L146.2,108.2L141.4,109.5L136.6,109.1L134.4,107.2L129.3,108.5L126.5,107.5L124.5,108.1L124.1,106.3L119.1,103.5L113.2,102.7L110.8,103.9L105.4,104.4L99.5,101.0L97.8,99.3L99.1,91.8L98.4,88.4L97.1,86.7L94.8,84.6L91.1,84.6L90.2,81.2L87.0,80.3L86.7,79.2L83.3,79.9L81.8,77.5L80.2,78.1L83.1,69.2L82.0,75.8L82.9,76.2L83.2,73.3L83.9,74.2L85.2,72.6L84.8,70.0L87.5,68.8L86.8,67.6L85.3,67.6L85.1,68.3L83.4,66.8L83.8,62.7L84.6,64.0L89.1,63.0L88.9,62.6L86.5,61.4L86.6,60.3L85.1,59.5L84.6,62.2L83.4,62.0L84.9,54.9L84.1,51.1L85.2,41.4L82.9,36.3L83.4,29.8Z"/>
+<path id="state-Oregon" class="state" data-name="Oregon" d="M46.7,157.7L50.2,153.7L53.0,147.4L57.8,142.1L61.8,134.2L69.6,113.3L74.9,102.4L74.6,100.8L75.7,99.8L78.3,92.7L79.3,86.3L81.0,84.3L81.0,79.2L83.1,81.9L83.2,81.1L85.1,81.1L86.0,82.0L89.8,81.0L91.1,84.6L95.6,84.9L98.4,88.4L99.1,91.8L97.8,99.3L105.0,104.3L110.8,103.9L114.2,102.7L122.2,104.9L124.1,106.3L124.5,108.1L126.5,107.5L129.3,108.5L134.4,107.2L138.0,109.3L141.4,109.5L146.2,108.2L151.4,108.7L153.0,107.5L161.1,109.2L163.9,108.1L199.0,116.5L200.4,121.2L201.6,121.5L204.1,124.3L204.6,127.8L199.5,133.9L197.6,138.1L194.9,140.5L194.1,143.8L192.1,146.0L189.5,146.9L184.6,154.3L184.7,157.4L186.3,157.7L187.0,159.1L188.4,159.1L188.2,160.2L189.4,161.4L187.5,162.9L187.7,165.5L185.1,169.0L175.1,213.8L110.0,198.1L46.7,179.8L44.9,176.5L45.4,174.6L45.0,172.6L45.4,171.3L45.2,170.8L48.0,163.7L46.7,157.7Z"/>
+<path id="state-California" class="state" data-name="California" d="M96.1,415.8L100.5,418.6L101.2,421.3L98.1,420.2L98.1,417.8L96.1,415.8Z M93.4,426.6L94.1,426.8L97.4,433.0L95.7,433.1L94.4,431.5L93.4,426.6Z M73.1,394.9L76.5,395.8L78.6,397.6L80.0,396.9L81.1,397.6L80.1,398.4L74.7,397.9L73.1,394.9Z M66.4,394.7L70.7,394.9L71.6,397.6L68.3,398.0L66.4,394.7Z M31.6,216.2L41.3,203.8L41.1,201.0L45.4,193.3L45.7,186.9L44.3,184.9L45.9,182.5L46.7,179.8L121.6,201.1L102.8,274.1L184.1,395.9L183.5,399.1L186.0,403.8L186.9,408.6L186.4,410.3L190.1,413.8L190.6,416.2L183.7,419.3L183.3,420.9L180.9,422.7L180.6,428.4L179.7,429.1L179.2,432.1L176.1,435.0L174.4,434.9L174.7,436.3L173.8,437.4L174.8,438.8L173.2,442.8L173.8,444.3L176.8,445.0L177.5,446.6L176.9,449.8L175.3,451.7L173.3,452.0L171.7,451.3L171.2,451.9L120.8,445.9L120.7,442.3L119.1,442.0L119.3,437.7L120.2,436.3L119.9,430.6L118.0,425.6L107.3,411.3L106.4,410.8L106.1,411.8L104.2,411.9L101.6,410.3L102.6,408.0L101.1,402.8L96.6,401.6L95.2,402.0L89.3,398.0L87.9,396.4L87.4,393.2L82.6,388.1L76.3,386.8L71.5,383.8L65.1,382.9L64.5,380.7L62.2,379.1L63.9,375.8L63.5,374.3L64.7,372.0L63.7,370.6L65.8,365.0L61.9,361.7L63.0,356.6L60.9,355.3L58.8,350.2L56.7,348.8L56.6,345.7L54.7,342.4L54.7,339.5L49.0,330.0L50.2,323.6L49.5,322.9L50.6,321.8L51.9,322.8L53.3,321.3L54.6,318.5L54.1,315.0L53.1,313.5L50.3,313.5L49.1,312.7L45.5,305.7L46.7,301.7L45.7,296.8L47.5,290.9L48.4,290.4L50.0,291.4L48.9,295.9L54.3,301.4L54.2,300.3L53.2,299.9L53.3,295.2L50.9,291.9L52.1,289.2L50.7,288.5L50.4,286.9L53.5,286.3L54.0,284.8L52.3,282.8L50.3,283.0L49.5,285.2L50.2,286.3L48.8,287.2L49.6,288.9L49.1,289.2L48.5,288.2L48.6,289.9L47.5,290.0L45.9,287.4L44.4,286.8L42.7,283.3L41.3,282.5L40.5,283.4L39.4,282.9L41.9,279.5L42.2,276.6L40.8,275.3L40.7,271.3L37.7,267.5L36.6,263.6L32.9,256.7L34.5,253.7L34.2,245.8L36.8,241.2L37.3,234.0L34.6,228.0L34.5,226.0L31.1,220.9L31.6,216.2Z"/>
+<path id="state-Idaho" class="state" data-name="Idaho" d="M184.6,154.3L189.5,146.9L192.1,146.0L194.1,143.8L194.9,140.5L197.6,138.1L199.5,133.9L204.6,127.8L204.0,123.9L200.4,121.2L199.5,118.9L198.4,114.1L199.8,112.3L198.5,107.3L213.4,43.3L229.4,46.8L224.1,71.5L228.1,79.5L228.1,82.1L226.8,83.0L228.5,85.2L226.1,86.0L228.8,88.0L229.3,89.8L232.6,91.6L232.6,93.3L234.8,96.0L235.7,99.5L237.5,101.2L236.9,102.6L237.5,104.1L239.2,105.0L239.1,107.1L241.0,106.5L241.7,109.3L245.9,109.2L246.4,109.9L245.5,112.9L244.3,113.2L244.6,114.8L243.5,115.9L242.9,118.3L242.1,118.6L242.0,121.2L240.5,121.4L241.4,122.9L240.3,124.3L241.8,126.2L241.2,126.9L241.6,128.4L239.4,128.8L238.0,130.4L238.9,132.4L237.4,133.8L237.0,135.7L238.9,136.0L240.5,138.9L242.4,137.1L243.3,137.5L245.4,136.5L247.1,134.2L248.5,134.5L248.7,136.4L250.3,137.2L249.4,139.1L250.6,139.3L249.9,141.9L250.8,146.1L253.9,151.6L253.6,154.1L252.6,154.3L253.0,156.4L254.6,158.7L256.4,158.1L258.2,159.7L259.0,168.1L261.2,170.8L263.1,167.9L264.3,167.6L269.9,170.1L270.8,168.0L272.1,167.4L275.1,169.1L279.5,168.7L280.1,170.3L282.4,169.3L286.4,170.6L286.0,167.8L286.8,167.4L286.7,166.4L288.0,166.5L288.8,165.5L291.1,169.2L290.8,170.3L293.5,173.4L283.8,234.7L231.8,225.9L175.1,213.8L185.1,169.0L187.7,165.5L187.5,162.9L189.4,161.4L188.2,160.2L188.4,159.1L187.0,159.1L186.3,157.7L184.7,157.4L184.6,154.3Z"/>
+<path id="state-Montana" class="state" data-name="Montana" d="M224.1,71.5L229.4,46.8L267.9,54.6L319.8,63.5L370.8,70.4L427.0,76.2L418.8,175.4L365.7,170.1L295.5,160.3L293.5,173.4L290.8,170.3L291.1,169.2L288.8,165.5L288.0,166.5L286.7,166.4L286.8,167.4L286.0,167.8L286.4,170.6L282.4,169.3L280.1,170.3L279.5,168.7L275.1,169.1L272.1,167.4L270.8,168.0L269.9,170.1L264.3,167.6L263.1,167.9L261.2,170.8L259.0,168.1L258.2,159.7L256.4,158.1L254.6,158.7L253.0,156.4L252.6,154.3L253.6,154.1L253.9,151.6L250.8,146.1L249.9,141.9L250.6,139.3L249.4,139.1L250.3,137.2L248.7,136.4L248.5,134.5L247.1,134.2L245.4,136.5L243.3,137.5L242.4,137.1L240.5,138.9L238.9,136.0L237.0,135.7L237.4,133.8L238.9,132.4L238.0,130.4L239.4,128.8L241.6,128.4L241.2,126.9L241.8,126.2L240.3,124.3L241.4,122.9L240.5,121.4L242.0,121.2L242.1,118.6L242.9,118.3L243.5,115.9L244.6,114.8L244.3,113.2L245.5,112.9L246.4,109.9L245.9,109.2L241.7,109.3L241.0,106.5L239.1,107.1L239.2,105.0L237.5,104.1L236.9,102.6L237.5,101.2L235.7,99.5L234.8,96.0L232.6,93.3L232.6,91.6L229.3,89.8L228.8,88.0L226.1,86.0L228.5,85.2L226.8,83.0L228.1,82.1L228.1,79.5L224.1,71.5Z"/>
+<path id="state-Wyoming" class="state" data-name="Wyoming" d="M279.8,259.6L295.5,160.3L365.7,170.1L418.5,175.4L410.1,275.4L343.4,268.5L279.8,259.6Z"/>
+<path id="state-Nevada" class="state" data-name="Nevada" d="M102.8,274.1L121.6,201.1L185.3,216.2L229.2,225.3L201.5,368.8L198.6,372.6L196.6,372.3L194.8,368.8L191.0,367.8L187.1,368.6L186.8,371.5L187.8,374.4L186.5,375.8L186.7,380.8L185.6,383.7L186.3,391.7L185.8,393.0L184.3,393.4L185.0,394.4L184.1,395.9L102.8,274.1Z"/>
+<path id="state-Utah" class="state" data-name="Utah" d="M205.3,348.8L229.2,225.3L283.8,234.7L279.8,259.6L316.9,265.1L303.2,365.0L259.4,358.4L205.3,348.8Z"/>
+<path id="state-Colorado" class="state" data-name="Colorado" d="M303.2,365.0L316.9,265.1L378.7,272.6L447.5,278.2L441.3,379.1L382.2,374.4L303.2,365.0Z"/>
+<path id="state-Arizona" class="state" data-name="Arizona" d="M168.1,456.6L168.9,453.9L171.7,451.3L175.0,451.8L176.9,449.8L177.5,446.8L176.9,445.2L173.9,444.4L173.2,442.8L174.8,438.8L173.8,437.4L174.7,436.3L174.4,434.9L176.1,435.0L179.2,432.1L179.7,429.1L180.6,428.4L180.9,422.7L183.3,420.9L184.1,418.9L190.6,416.2L190.1,413.8L186.4,410.3L186.9,408.6L186.0,403.8L183.5,399.1L185.0,394.4L184.3,393.4L185.8,393.0L186.3,391.7L185.6,383.5L186.7,380.8L186.5,375.8L187.8,374.4L186.8,371.5L187.0,368.7L189.7,367.8L194.1,368.5L196.6,372.3L198.7,372.5L201.5,368.8L205.3,348.8L259.4,358.4L303.2,365.0L283.6,506.0L240.9,499.7L200.6,476.5L168.1,456.6Z"/>
+<path id="state-New_Mexico" class="state" data-name="New Mexico" d="M283.6,506.0L303.2,365.0L357.3,371.8L422.3,377.6L421.4,390.1L420.6,390.1L411.7,502.8L336.9,495.9L336.1,499.2L338.2,501.5L302.8,497.2L301.4,508.4L283.6,506.0Z"/>
+<path id="state-North_Dakota" class="state" data-name="North Dakota" d="M420.7,151.8L427.0,76.2L484.8,80.1L540.5,81.7L541.1,86.3L542.7,89.6L541.3,92.6L542.1,93.7L541.5,94.7L542.3,99.2L541.6,103.0L546.5,116.6L546.6,131.3L548.0,133.3L547.2,140.7L548.5,145.4L550.6,148.1L551.2,158.0L491.1,156.4L420.7,151.8Z"/>
+<path id="state-South_Dakota" class="state" data-name="South Dakota" d="M414.3,225.3L420.7,151.8L491.1,156.4L551.2,158.0L550.8,160.9L545.9,166.2L548.8,170.9L551.8,172.0L553.0,173.9L552.8,219.0L550.2,219.0L550.1,220.2L551.5,221.9L551.4,224.0L550.3,224.1L550.7,225.7L552.3,226.0L553.1,228.5L551.5,230.5L551.4,234.3L549.3,238.1L551.5,240.8L551.9,243.7L552.8,244.3L549.8,243.9L548.0,241.5L548.3,240.2L546.5,239.9L546.2,238.9L544.4,238.2L543.4,238.5L543.1,237.5L540.3,237.2L538.4,235.1L527.3,234.6L525.6,236.8L523.8,237.1L521.8,235.1L516.4,232.8L515.4,231.0L458.5,228.6L414.3,225.3Z"/>
+<path id="state-Nebraska" class="state" data-name="Nebraska" d="M410.1,275.4L414.3,225.3L458.5,228.6L515.4,231.0L516.4,232.8L521.8,235.1L524.1,237.1L525.6,236.8L527.3,234.6L530.2,235.2L537.1,234.7L540.3,237.2L543.1,237.5L543.4,238.5L544.4,238.2L546.2,238.9L546.5,239.9L548.3,240.2L548.0,241.5L549.8,243.9L550.9,243.6L551.8,244.5L553.9,244.8L553.3,247.8L554.9,250.3L554.6,252.5L556.0,253.8L556.5,256.7L558.6,257.4L558.0,259.2L559.8,261.8L559.0,263.3L559.6,264.1L558.7,264.5L559.3,268.4L560.2,269.1L560.9,268.2L560.8,269.9L562.4,270.3L561.8,273.2L563.4,274.4L562.8,275.0L562.4,274.4L562.4,276.8L564.0,277.5L563.2,278.0L563.2,280.4L564.6,284.6L563.2,288.9L565.7,291.8L565.5,293.7L567.5,293.3L566.7,294.3L568.1,298.3L567.5,299.2L570.9,300.9L570.9,302.4L572.5,304.0L572.2,306.1L574.2,307.0L509.4,306.3L445.9,303.3L447.5,278.2L410.1,275.4Z"/>
+<path id="state-Kansas" class="state" data-name="Kansas" d="M445.9,303.3L509.4,306.3L574.2,307.0L576.2,309.4L578.3,310.4L581.1,309.5L582.4,311.6L581.3,312.6L582.6,312.7L582.7,313.4L580.8,313.5L578.1,318.5L581.3,322.3L582.4,322.3L582.0,324.3L583.6,326.8L588.2,328.3L588.4,382.5L517.0,382.2L441.3,379.1L445.9,303.3Z"/>
+<path id="state-Oklahoma" class="state" data-name="Oklahoma" d="M421.4,390.1L422.3,377.6L454.8,379.8L514.3,382.2L588.4,382.5L588.6,395.1L592.8,422.9L592.3,467.3L590.6,467.3L591.2,466.6L590.2,466.9L590.8,466.4L590.2,465.9L588.6,466.5L589.1,466.2L589.1,465.5L587.6,465.9L587.9,465.5L587.3,465.2L587.2,465.8L587.2,464.9L586.1,464.7L586.6,464.1L584.4,464.4L582.3,461.6L580.7,461.6L580.3,460.2L579.8,461.1L579.9,460.1L579.1,460.5L579.1,459.8L577.1,459.1L575.7,461.3L570.4,461.2L569.4,459.6L568.7,460.6L566.0,460.9L565.7,462.1L564.4,462.3L562.5,461.1L560.6,462.2L557.9,462.3L557.3,464.2L554.9,464.0L553.8,466.1L552.3,463.8L550.7,463.9L550.1,462.7L548.0,462.0L548.9,460.8L547.2,460.2L546.5,462.2L545.3,462.6L544.6,461.4L542.9,461.6L542.1,459.2L540.8,459.2L540.0,461.9L538.5,461.8L539.3,462.7L538.4,463.0L538.5,464.5L537.7,465.2L536.3,464.0L536.1,462.5L536.9,461.9L536.0,460.2L535.0,461.5L533.9,460.8L533.5,461.6L533.5,460.9L532.8,462.4L531.5,462.5L530.8,460.4L528.4,460.5L528.2,459.1L526.5,458.1L523.1,461.4L520.4,460.7L520.9,458.0L517.9,457.6L517.6,453.8L516.3,454.8L512.3,453.6L511.2,455.5L509.8,456.0L507.5,453.4L504.2,454.2L499.6,451.7L495.4,451.7L495.2,448.6L491.9,445.4L491.2,447.6L487.8,446.3L487.1,447.4L485.2,447.2L480.7,442.1L479.1,442.4L481.2,393.6L430.0,390.7L421.4,390.1Z"/>
+<path id="state-Texas" class="state" data-name="Texas" d="M580.5,581.1L585.6,576.0L588.8,574.9L580.5,581.1Z M529.5,636.1L530.5,623.9L533.4,617.1L534.0,617.4L536.0,613.4L535.7,612.4L537.5,612.0L532.5,621.0L530.4,627.8L530.2,635.0L532.2,643.6L530.6,643.6L531.8,643.3L529.5,636.1Z M336.0,498.3L336.8,497.9L336.9,495.9L411.7,502.8L420.6,390.1L481.2,393.6L479.1,442.4L480.7,442.1L485.2,447.2L487.1,447.4L487.8,446.3L491.2,447.6L491.9,445.4L495.2,448.6L495.4,451.7L499.6,451.7L504.2,454.2L507.5,453.4L509.8,456.0L511.2,455.5L512.3,453.6L516.3,454.8L517.6,453.8L517.9,457.6L520.9,458.0L520.4,460.7L523.1,461.4L526.5,458.1L528.2,459.1L528.4,460.5L530.8,460.4L531.5,462.5L532.8,462.4L533.5,460.9L533.5,461.6L533.9,460.8L535.0,461.5L536.0,460.2L536.9,461.9L536.1,462.5L536.3,464.0L537.7,465.2L538.5,464.5L538.4,463.0L539.3,462.7L538.5,461.8L540.0,461.9L540.8,459.2L542.1,459.2L542.9,461.6L544.6,461.4L545.3,462.6L546.5,462.2L547.2,460.2L548.9,460.8L548.0,462.0L550.1,462.7L550.7,463.9L552.3,463.8L553.8,466.1L554.9,464.0L557.3,464.2L557.9,462.3L560.6,462.2L562.5,461.1L564.4,462.3L565.7,462.1L566.0,460.9L568.7,460.6L569.4,459.6L570.4,461.2L575.7,461.3L577.1,459.1L579.1,459.8L579.1,460.5L579.9,460.1L579.8,461.1L580.3,460.2L580.7,461.6L582.3,461.6L584.4,464.4L586.6,464.1L586.1,464.7L587.2,464.9L587.2,465.8L587.3,465.2L587.6,465.9L589.1,465.5L588.9,466.5L590.2,465.9L590.8,466.4L590.2,466.9L591.1,466.5L590.6,467.3L591.6,467.0L591.5,467.6L593.1,466.9L592.7,467.9L594.5,468.4L594.5,469.4L597.4,468.2L597.3,469.0L598.4,469.0L598.0,468.4L598.6,468.0L599.8,469.1L601.3,468.6L602.4,508.2L605.5,510.5L607.2,513.5L607.8,515.3L607.0,518.2L608.1,519.7L609.7,520.0L608.9,521.1L609.9,521.4L610.7,523.7L611.3,523.5L610.3,525.2L611.8,526.0L612.5,528.6L613.7,528.1L613.1,530.4L614.3,531.9L612.9,532.8L614.0,534.3L613.0,535.7L613.5,537.2L609.7,544.4L610.6,546.8L609.2,549.5L610.6,550.6L611.0,554.3L610.1,555.7L610.8,556.3L606.0,562.7L608.0,565.9L601.9,566.7L590.9,571.9L588.6,574.0L587.7,574.2L587.8,573.2L589.8,571.4L592.2,569.9L593.9,570.3L594.3,569.2L593.2,569.6L592.4,568.8L587.6,570.0L589.5,565.8L589.3,564.3L588.1,563.7L584.9,566.8L582.8,565.6L582.4,567.5L583.2,568.2L582.3,569.5L584.8,570.8L583.9,571.6L585.8,574.0L584.6,576.2L583.5,576.2L582.0,578.1L580.5,579.0L579.5,578.4L579.2,580.4L580.2,581.5L574.5,586.5L553.4,597.8L551.2,600.3L543.0,605.8L537.7,612.1L538.7,609.6L537.8,609.8L539.0,609.4L541.5,604.9L542.6,605.3L542.9,603.8L545.5,603.2L547.6,600.9L551.3,599.7L550.6,599.1L551.8,597.9L546.3,600.5L545.4,598.1L543.0,596.3L544.1,597.9L542.0,597.9L543.5,599.2L543.6,602.4L540.8,605.1L540.9,604.5L540.3,605.0L539.6,605.0L540.7,601.4L539.6,602.6L539.3,605.0L538.2,604.4L538.5,603.0L533.9,606.1L536.1,607.5L535.8,606.9L538.3,605.3L537.1,610.1L537.0,608.7L534.3,612.5L533.8,612.3L533.8,612.0L533.2,611.1L532.9,611.0L530.9,611.7L531.3,610.9L527.3,611.1L528.3,612.3L530.3,612.1L530.5,614.4L531.1,614.9L533.1,615.5L533.3,615.7L529.3,624.8L527.2,625.9L526.4,625.7L527.9,624.3L527.6,623.1L524.9,625.6L522.8,623.1L524.0,625.1L522.0,626.0L524.1,625.8L524.5,626.7L526.4,627.1L529.1,626.3L528.2,635.7L529.3,635.9L528.1,636.5L529.2,637.3L527.7,637.5L528.4,642.4L529.1,645.6L529.8,645.6L532.0,650.6L532.3,652.6L531.8,650.8L531.3,650.4L531.0,650.7L531.7,651.1L531.6,654.9L534.0,655.8L533.8,656.4L534.9,656.0L534.9,658.7L531.8,658.6L532.0,659.1L529.7,659.8L529.7,661.5L528.6,661.4L527.9,660.4L526.4,660.3L523.2,656.5L521.5,656.8L518.7,655.6L513.9,656.3L513.8,655.5L511.2,655.8L505.6,651.5L504.7,652.0L502.4,650.6L500.5,651.1L497.5,647.7L495.5,648.0L494.8,647.0L494.4,647.6L492.5,646.4L491.2,646.8L490.9,644.2L489.4,643.2L487.5,635.6L483.6,631.0L483.9,625.4L481.8,623.7L483.3,619.7L482.2,619.2L482.6,617.5L480.8,615.6L478.3,615.1L474.8,611.5L473.7,606.9L472.4,606.5L470.5,602.7L467.8,601.4L466.1,599.2L464.6,594.1L465.4,593.6L464.2,593.2L464.1,591.4L461.9,589.4L461.3,585.8L459.1,583.0L458.6,578.3L456.5,576.5L455.7,574.1L451.6,571.3L450.6,569.0L446.5,567.2L446.7,564.6L445.5,565.7L445.6,563.9L444.4,563.9L443.7,560.8L442.7,561.3L442.4,560.3L440.7,560.9L440.6,559.6L438.3,560.9L434.9,560.0L434.7,559.2L434.5,559.8L432.2,559.8L431.2,558.9L429.1,559.5L424.0,556.9L422.2,559.7L420.1,558.9L418.7,559.9L418.4,559.2L416.0,559.7L412.7,565.0L412.4,568.0L410.7,569.2L410.1,571.4L410.8,572.4L408.0,573.3L405.5,576.0L405.0,577.9L401.3,577.8L400.4,576.1L399.2,576.5L397.4,575.3L395.8,572.9L392.2,572.0L391.0,569.8L385.5,567.9L382.9,565.9L382.1,563.5L379.4,562.4L376.0,559.3L372.9,551.6L373.1,543.9L370.1,539.8L369.3,534.3L363.5,528.7L359.7,527.2L359.8,526.2L356.7,523.4L355.9,521.0L352.5,518.5L349.2,513.2L344.1,510.1L341.1,503.1L338.5,502.1L336.0,498.3Z"/>
+<path id="state-Minnesota" class="state" data-name="Minnesota" d="M542.7,89.6L540.5,81.7L575.1,81.9L575.0,72.3L576.6,73.1L578.3,72.7L580.6,73.8L582.8,87.1L583.7,88.1L586.9,89.3L589.6,88.9L590.7,90.3L597.2,90.7L598.0,93.4L603.5,92.6L603.5,91.4L607.0,90.1L612.0,90.2L615.9,92.3L617.5,92.2L617.6,93.2L616.2,94.2L619.7,94.5L620.6,95.3L620.4,96.8L622.2,100.0L623.9,99.3L623.2,97.6L623.9,96.6L627.4,96.4L629.1,99.4L633.3,100.1L633.4,102.2L636.0,102.2L635.9,103.8L641.0,102.7L647.2,98.2L648.0,98.3L649.6,101.9L652.5,101.0L652.9,101.6L656.0,101.6L660.0,100.8L661.9,101.4L664.2,103.6L666.2,102.6L671.0,102.7L668.8,103.2L668.6,104.2L668.0,103.9L663.2,107.6L655.5,110.5L649.9,114.0L645.5,117.9L638.7,126.3L636.9,127.5L633.6,131.3L628.5,135.2L629.8,137.4L628.0,136.4L626.5,137.5L626.5,138.8L625.0,138.5L625.6,153.3L624.6,154.8L623.3,154.6L622.6,155.9L621.6,155.7L618.5,158.0L617.3,161.3L615.8,162.6L615.7,166.1L617.7,166.3L620.0,169.3L618.1,173.3L618.6,177.5L617.6,178.9L618.6,182.0L617.7,186.7L622.5,191.1L626.3,191.3L628.3,194.0L633.0,195.8L634.9,199.8L640.2,203.8L643.1,204.6L646.7,210.0L646.5,214.0L647.5,216.8L600.9,218.6L552.8,219.0L553.0,173.9L551.8,172.0L548.8,170.9L545.9,166.2L550.8,160.9L551.3,154.3L550.6,148.1L548.5,145.4L547.2,140.7L548.0,133.3L546.6,131.3L546.5,116.6L541.6,103.0L542.3,99.2L541.5,94.7L542.1,93.7L541.3,92.6L542.7,89.6Z"/>
+<path id="state-Iowa" class="state" data-name="Iowa" d="M549.3,238.1L551.4,234.3L551.5,230.5L553.1,228.5L552.4,226.0L550.8,225.9L550.4,224.8L550.3,224.1L551.4,224.0L551.5,221.9L550.2,220.6L550.2,219.0L599.9,218.6L647.5,216.8L647.9,220.5L650.8,222.8L648.8,226.0L648.8,227.6L651.3,235.5L653.5,237.0L658.0,238.1L659.2,241.9L663.2,244.8L664.4,248.0L668.7,250.3L669.3,253.3L668.9,258.2L666.6,260.0L666.2,263.9L664.1,265.7L662.3,265.8L660.6,267.4L653.4,269.0L652.3,273.4L655.7,276.9L655.7,280.5L653.3,284.0L652.9,287.9L648.9,289.5L647.8,290.9L648.5,294.8L647.7,295.4L645.7,294.7L645.6,293.5L641.6,289.8L597.1,292.3L565.4,292.3L565.2,290.7L563.1,288.6L564.6,284.6L563.2,280.4L563.2,278.0L564.0,277.5L562.4,276.9L562.4,274.4L562.8,275.0L563.4,274.4L561.8,273.2L562.4,270.4L560.8,269.9L560.9,268.2L560.2,269.1L559.2,268.1L558.7,264.5L559.6,264.1L559.0,263.3L559.8,261.9L558.0,259.2L558.6,257.4L556.6,256.8L556.9,255.9L556.0,255.6L556.0,253.8L554.5,252.4L554.9,250.3L553.3,247.8L553.9,244.8L552.2,244.3L551.5,240.8L549.3,238.1Z"/>
+<path id="state-Missouri" class="state" data-name="Missouri" d="M565.3,292.5L597.2,292.3L641.6,289.8L643.7,291.5L644.6,293.4L645.6,293.6L645.7,294.7L647.7,295.4L646.4,298.0L646.3,301.8L649.4,311.7L654.8,316.3L656.1,318.5L662.3,323.0L664.1,331.3L666.0,332.6L667.7,330.1L668.9,330.0L674.8,332.7L673.1,335.8L673.7,338.6L670.6,345.8L671.1,348.8L676.1,353.2L679.8,354.7L678.9,355.6L679.4,356.7L681.5,356.0L685.1,358.4L685.3,359.6L688.3,360.9L689.2,363.3L688.4,363.7L688.5,364.8L690.7,368.4L688.9,371.1L690.2,372.0L692.0,377.0L694.2,378.3L694.5,377.4L693.4,376.3L694.5,376.1L696.0,378.5L697.8,378.6L697.3,381.3L696.4,382.1L697.8,383.6L696.2,384.4L697.1,386.2L696.1,388.5L695.3,388.9L693.9,387.3L693.1,387.5L691.4,391.9L690.9,389.1L689.2,389.3L690.7,394.0L688.5,395.5L690.4,397.1L687.0,397.6L689.4,399.9L687.8,401.5L687.3,403.7L673.9,404.6L674.9,402.2L679.7,396.5L679.6,394.5L678.1,393.8L677.6,391.7L588.6,395.1L588.2,328.3L583.6,326.8L582.0,324.3L582.4,322.3L581.3,322.3L578.1,318.5L580.8,313.5L582.7,313.4L582.6,312.7L581.3,312.6L582.4,311.6L581.2,310.7L581.4,309.8L577.6,310.2L574.0,306.7L572.3,306.2L572.5,304.0L570.9,302.4L570.9,300.9L567.5,299.2L568.1,298.3L566.7,294.3L567.5,293.3L565.6,293.8L565.3,292.5Z"/>
+<path id="state-Arkansas" class="state" data-name="Arkansas" d="M588.6,395.1L677.6,391.7L678.1,393.8L679.6,394.5L679.7,396.5L674.9,402.2L673.9,404.6L686.8,403.7L688.8,406.3L686.8,406.1L686.3,407.2L687.7,408.3L682.8,410.7L683.4,412.5L684.8,412.2L685.0,412.8L683.0,414.3L684.0,416.1L682.4,415.1L681.4,415.5L681.5,419.4L680.6,417.3L679.0,418.8L679.1,420.0L679.8,419.0L680.9,419.6L680.4,421.7L679.2,422.4L681.1,423.6L680.4,424.6L681.5,425.8L679.5,426.3L678.8,428.8L677.0,428.6L676.8,429.7L678.2,431.5L677.0,433.4L674.9,433.9L674.3,432.6L673.5,432.7L674.2,436.3L672.9,436.6L672.7,434.8L671.9,436.8L674.1,438.0L672.8,439.2L672.3,437.5L671.6,438.2L672.7,441.2L671.8,442.7L672.3,444.5L670.6,445.7L670.6,447.2L669.9,447.0L670.2,445.8L668.4,446.1L668.9,447.6L667.2,448.4L666.9,450.1L665.2,449.3L665.5,450.5L667.6,450.7L667.7,451.4L664.8,452.0L666.6,453.3L666.2,454.7L664.3,455.0L664.8,456.4L663.7,455.4L662.3,456.2L663.9,457.3L662.7,459.1L664.6,460.9L661.6,461.1L661.4,462.4L663.8,463.6L662.6,464.2L661.1,463.0L659.8,463.8L661.9,465.5L659.8,466.8L660.9,468.2L659.9,469.8L661.1,469.6L661.3,468.3L662.3,469.3L660.5,470.7L662.0,471.2L663.6,469.5L662.0,472.0L662.9,474.6L663.4,473.6L664.1,473.7L663.2,475.1L663.3,477.2L661.0,477.7L662.8,479.2L661.9,480.6L601.9,482.4L601.6,469.0L600.8,468.5L599.8,469.1L598.6,468.0L598.0,468.4L598.4,468.6L598.4,469.0L597.3,469.0L597.4,468.2L594.6,469.4L594.5,468.4L592.7,467.9L593.1,466.9L592.4,467.1L592.8,422.9L588.6,395.1Z"/>
+<path id="state-Louisiana" class="state" data-name="Louisiana" d="M647.4,567.1L650.2,565.5L653.0,567.2L654.5,567.1L652.1,569.5L647.4,567.1Z M602.4,508.2L601.9,482.4L661.9,480.6L661.0,482.5L662.0,483.3L662.6,481.2L663.4,481.0L664.2,483.1L662.6,484.7L662.3,487.0L664.6,487.7L662.7,490.4L663.4,491.1L665.6,489.6L665.7,490.6L664.3,491.8L666.3,493.2L665.3,493.4L664.0,492.0L663.6,493.6L665.0,494.7L666.8,494.6L666.4,496.7L668.1,497.0L668.8,496.2L667.9,498.1L666.7,498.2L666.5,500.8L665.6,499.6L663.0,500.9L663.1,502.5L665.4,502.6L665.2,501.2L666.4,502.0L664.9,504.5L663.2,504.0L665.1,505.3L662.8,506.7L663.0,507.9L661.2,509.3L661.5,510.6L660.7,509.4L659.6,509.9L659.3,512.0L661.4,512.0L659.2,512.4L658.7,515.5L656.2,515.4L656.9,516.5L658.6,516.6L656.2,518.1L657.3,522.0L655.9,520.4L655.2,521.0L656.7,524.2L653.7,524.9L655.2,526.5L654.5,528.4L656.0,529.9L654.4,531.3L695.2,528.9L693.1,537.6L694.0,538.1L694.3,540.3L697.1,542.6L698.9,548.2L699.9,549.2L700.6,548.8L700.9,549.1L698.8,549.9L696.7,552.4L697.0,553.3L694.8,552.9L694.2,554.7L695.0,555.7L697.1,555.1L696.6,556.2L698.8,557.3L699.9,556.7L700.1,554.0L701.9,552.7L702.0,551.6L703.2,552.7L704.5,552.2L704.0,553.4L703.3,552.8L702.7,553.6L704.4,554.4L704.8,556.1L706.7,553.4L707.7,553.9L707.7,554.9L705.4,556.3L707.6,556.1L707.0,556.9L704.5,557.5L705.7,558.7L706.6,558.3L706.8,559.2L704.4,558.7L703.8,560.6L704.8,561.4L703.9,561.0L703.6,562.2L701.7,560.4L702.4,562.7L698.9,562.6L700.3,564.1L698.4,563.2L699.4,564.4L698.6,565.1L702.2,567.2L702.4,568.6L701.5,568.7L706.4,568.8L706.4,569.4L706.9,568.5L707.2,569.0L708.0,569.4L708.7,570.5L709.8,569.6L711.5,571.6L711.4,572.9L713.5,572.4L713.9,573.5L711.7,573.9L713.3,574.4L712.8,575.5L712.0,575.0L711.1,576.2L711.3,578.1L709.6,577.5L708.8,576.0L705.4,580.1L708.1,574.7L707.6,573.2L706.5,575.0L705.5,575.2L703.5,573.1L699.9,571.5L695.5,571.0L695.9,570.1L696.6,570.7L699.7,569.3L700.8,569.8L699.6,568.5L696.0,569.0L695.3,568.5L695.8,567.5L695.0,567.2L694.5,568.2L692.0,568.0L692.5,568.4L691.1,570.3L692.5,570.5L691.3,570.7L691.7,572.1L690.4,571.9L689.8,573.0L691.3,574.1L693.2,572.6L687.5,577.3L686.2,576.0L686.9,575.8L686.1,575.7L686.6,574.6L685.5,572.9L684.3,572.1L683.4,573.9L683.5,572.3L682.4,571.1L681.6,572.6L679.0,572.4L679.9,574.1L678.7,574.1L677.2,577.0L676.4,576.7L674.1,578.6L671.4,575.8L670.2,576.1L669.5,575.3L669.0,576.0L664.0,574.4L662.8,573.1L663.9,573.0L664.4,571.8L665.0,571.5L665.9,573.1L666.7,572.7L666.9,574.3L666.7,574.3L666.6,574.7L666.7,574.8L667.7,574.2L667.4,572.3L665.3,570.8L665.3,569.9L662.8,571.1L662.1,570.0L663.0,568.9L662.2,569.1L662.2,568.1L660.0,569.3L659.1,567.6L658.2,568.0L657.7,565.2L655.7,565.3L656.0,562.7L653.3,562.6L650.6,563.7L651.5,560.7L648.5,560.7L648.3,561.7L644.8,563.8L645.1,562.5L643.5,562.9L644.3,564.2L645.7,564.2L645.1,565.0L645.8,566.4L647.3,565.8L647.9,566.2L641.1,568.6L633.7,567.2L621.6,563.1L611.4,564.1L608.0,565.6L606.0,562.7L610.8,556.3L610.1,555.7L611.0,554.3L610.6,550.6L609.2,549.5L610.6,546.8L609.7,544.4L613.5,537.2L613.0,535.7L614.0,534.3L612.9,532.8L614.3,531.9L613.1,530.4L613.7,528.1L612.5,528.6L611.8,526.0L610.3,525.2L611.3,523.5L610.7,523.7L609.9,521.4L608.9,521.1L609.7,520.0L608.1,519.7L607.0,518.2L607.8,515.3L607.2,513.5L605.5,510.5L602.4,508.2Z"/>
+<path id="state-Alaska" class="state" data-name="Alaska" d="M209.4,785.1L211.2,786.7L213.6,786.0L213.5,786.4L216.7,790.2L216.8,790.6L213.9,787.4L213.2,787.2L213.8,789.0L217.1,791.8L214.8,796.6L214.6,793.1L209.4,785.1Z M210.5,795.6L209.5,794.8L208.7,794.7L209.1,794.0L208.8,793.6L209.3,792.9L209.7,794.0L212.5,793.4L216.5,804.2L214.0,800.6L210.9,799.9L212.0,797.4L211.5,797.2L210.8,797.5L210.5,795.6Z M202.7,790.3L205.7,787.0L207.3,789.5L207.9,787.8L208.6,788.1L210.2,788.1L210.9,789.8L210.3,789.4L209.4,789.4L212.3,792.9L208.4,792.2L207.8,795.0L206.1,793.5L205.4,793.7L205.1,793.1L205.4,792.5L205.1,792.2L202.7,790.3Z M221.3,804.7L222.5,803.1L221.1,800.9L223.3,800.5L224.5,802.8L230.8,806.2L228.4,806.0L228.3,807.4L229.4,806.3L231.0,808.7L231.8,808.6L232.2,807.8L231.8,810.4L232.9,809.7L233.8,812.8L231.1,812.9L229.3,809.4L228.2,809.7L229.1,810.1L229.2,811.4L226.9,809.5L227.4,811.2L230.5,814.1L229.4,814.1L226.7,811.6L226.6,809.6L225.0,810.5L226.4,808.3L225.6,807.0L222.3,806.1L223.8,804.6L222.7,803.6L221.3,804.7Z M215.9,797.9L217.0,796.4L218.8,798.3L219.2,797.3L217.3,795.2L221.8,794.5L225.6,797.2L220.7,800.3L220.1,798.7L219.0,799.1L219.6,804.8L215.9,797.9Z M122.3,801.0L124.1,800.5L123.3,799.6L126.0,796.0L127.5,795.7L126.5,797.7L128.4,797.8L128.4,799.5L129.1,798.2L128.7,800.0L122.3,801.0Z M115.5,807.5L118.3,804.6L120.1,806.0L119.8,803.3L121.3,802.6L121.8,804.2L121.8,801.9L123.9,803.0L122.9,801.5L125.3,802.3L124.8,803.2L125.0,804.0L127.1,801.7L126.9,805.2L128.5,804.9L127.6,806.8L124.7,806.1L126.2,807.7L123.3,808.8L125.0,809.4L122.9,810.8L122.6,808.9L119.6,813.1L120.7,809.5L120.4,809.3L117.9,812.2L115.5,807.5Z M61.6,828.1L68.3,824.8L69.6,825.0L70.0,825.2L70.1,827.5L71.7,828.6L62.8,830.1L61.6,828.1Z M58.8,775.1L65.0,774.2L66.8,779.3L64.6,779.5L63.7,780.4L58.8,775.1Z M44.0,836.5L48.5,835.7L49.1,833.9L50.3,834.9L49.7,831.7L51.8,831.7L51.6,833.3L53.1,831.9L53.9,832.8L50.2,836.6L44.0,836.5Z M66.4,725.7L81.6,719.9L83.5,720.1L84.4,720.6L82.4,723.5L83.7,725.1L90.3,726.8L91.8,724.2L93.5,725.1L93.2,723.8L91.8,723.0L90.3,724.0L88.3,718.4L89.6,717.7L91.9,722.6L90.8,719.9L92.5,717.7L84.8,715.6L83.9,710.7L75.9,702.7L78.9,698.2L87.4,697.9L94.7,687.4L98.1,687.4L102.1,684.0L103.6,683.4L104.6,683.2L104.8,683.2L103.1,683.6L103.1,684.4L107.5,683.8L111.7,679.6L114.7,681.4L113.5,684.3L116.2,681.5L118.9,685.0L124.9,684.4L124.2,686.1L124.4,686.3L125.1,686.5L125.3,686.5L125.5,686.7L123.9,686.8L126.1,687.9L133.6,686.7L139.4,689.1L148.2,690.3L153.3,687.7L161.2,690.9L177.8,774.7L182.6,774.8L186.2,772.4L186.3,774.9L195.2,780.8L196.3,783.7L198.9,780.6L200.0,780.2L200.0,776.1L204.7,773.9L207.0,777.2L216.5,782.5L229.0,795.9L239.3,797.7L242.0,804.0L240.5,810.0L237.8,808.4L237.7,807.7L238.8,807.3L239.0,807.0L238.9,806.7L237.0,807.1L237.7,805.5L237.1,803.3L234.1,799.4L233.2,800.7L236.8,804.9L236.3,807.1L235.5,806.8L235.8,805.6L235.5,805.2L233.4,806.5L233.8,808.6L232.4,806.6L233.2,806.4L232.4,805.8L232.8,805.1L233.0,804.3L232.1,803.2L233.1,802.4L231.9,802.4L232.9,801.9L232.0,801.3L230.8,802.5L231.6,805.7L229.3,804.0L230.4,803.2L229.6,799.9L230.0,799.4L231.1,799.3L231.1,799.1L229.6,799.3L229.3,800.5L228.9,800.2L228.6,800.3L228.9,803.3L228.0,801.7L226.9,801.7L226.8,802.2L226.4,799.4L226.9,799.1L227.3,800.0L227.9,800.3L228.2,800.1L226.5,796.4L222.8,793.1L219.0,793.6L220.4,791.8L217.2,789.1L220.5,789.9L214.4,786.6L213.6,783.6L213.6,785.6L211.0,785.6L211.1,785.0L208.5,782.5L208.2,781.1L207.3,781.2L204.8,775.9L206.0,779.3L205.0,778.4L204.4,778.1L204.1,778.2L209.4,786.9L206.6,784.7L204.9,786.3L204.8,784.3L202.6,781.3L202.6,783.5L200.6,782.0L198.1,781.8L198.4,783.8L200.9,783.2L201.6,785.2L204.4,786.5L201.8,788.8L200.4,787.5L196.3,786.4L193.0,783.4L184.4,780.5L185.3,780.0L185.8,778.7L184.9,775.7L182.0,779.6L179.4,779.7L176.5,778.8L177.2,778.3L176.8,777.2L177.5,776.5L177.5,776.2L177.3,776.0L175.8,778.3L163.7,779.7L163.6,778.3L160.4,778.3L160.7,776.1L159.0,777.8L157.1,776.7L155.5,776.8L156.3,776.0L156.8,774.7L155.4,774.6L154.1,775.5L154.8,773.8L152.2,775.1L154.5,773.4L151.6,773.1L151.8,771.6L153.5,771.3L153.3,770.9L152.0,770.9L150.5,773.0L150.2,772.9L150.5,772.7L150.4,772.3L150.1,772.8L150.2,771.1L149.8,771.0L149.8,773.0L149.4,772.4L148.8,773.7L147.8,771.3L147.9,774.0L147.2,773.3L145.6,774.8L147.4,770.6L146.9,770.2L143.0,775.1L144.4,776.5L145.7,775.3L143.2,778.0L146.3,777.1L144.6,780.5L146.4,780.2L146.1,781.7L145.1,780.5L144.8,782.7L141.9,781.9L141.0,783.7L140.9,782.3L140.2,781.4L139.5,784.2L139.9,784.6L140.0,785.2L139.5,785.0L139.0,783.0L139.1,785.9L137.4,784.1L136.6,788.1L136.8,785.1L134.9,787.0L135.3,787.9L134.6,788.1L133.6,789.2L133.6,790.3L133.3,789.1L132.0,789.3L133.0,790.1L131.5,789.8L130.0,790.8L129.3,788.3L131.3,787.9L133.6,784.8L131.4,786.7L129.2,785.2L131.0,776.4L135.5,773.2L141.6,774.7L136.7,772.1L138.9,768.8L130.0,774.2L126.6,780.4L124.5,780.9L125.9,782.7L123.1,784.5L123.8,786.0L122.0,785.3L118.8,789.0L119.0,789.2L119.7,789.1L118.2,791.1L118.7,792.2L120.8,791.6L123.0,793.7L117.8,798.9L118.4,800.3L117.1,799.8L106.9,807.5L106.7,810.7L105.6,810.1L103.4,812.5L102.5,811.6L102.2,811.6L102.0,813.7L98.7,814.2L99.9,815.0L97.2,815.0L97.1,817.3L98.5,817.1L96.8,819.2L96.8,817.4L95.9,817.2L95.5,819.5L91.1,819.7L90.5,822.7L90.6,820.4L89.6,819.9L81.8,823.7L80.3,821.1L77.8,825.6L75.4,826.0L74.5,823.3L74.6,826.5L71.5,824.8L72.1,826.3L70.2,827.3L70.2,824.9L73.2,824.3L79.5,818.5L84.3,818.1L83.5,818.9L84.5,820.6L84.6,819.2L87.3,820.5L85.8,818.4L87.2,815.8L96.2,811.7L97.8,807.8L101.8,805.7L102.5,797.5L105.7,792.3L99.6,795.3L98.2,791.7L96.0,797.1L93.0,791.9L91.5,793.3L89.8,790.3L82.5,794.3L80.7,793.2L82.1,793.3L82.8,792.1L82.0,787.6L83.8,785.8L81.5,779.3L80.5,780.9L73.9,781.6L70.4,774.2L68.6,774.2L71.3,771.6L71.3,769.4L68.5,768.6L67.5,761.8L69.6,761.9L69.5,759.7L74.3,755.7L76.9,750.2L81.3,752.7L85.7,748.6L86.2,749.7L89.1,749.8L90.4,749.5L92.2,746.6L89.7,741.0L93.0,738.6L91.6,736.5L84.7,741.2L84.7,739.7L83.7,738.1L83.4,740.4L81.6,738.5L76.1,738.9L71.7,736.8L69.9,731.0L72.3,730.3L66.4,725.7Z M48.6,743.5L48.9,739.0L59.6,746.3L55.0,748.6L52.2,743.9L48.6,743.5Z"/>
+<path id="state-Hawaii" class="state" data-name="Hawaii" d="M347.1,807.4L348.3,806.4L351.3,806.2L352.7,806.9L354.7,805.7L356.3,805.4L356.9,805.6L358.1,804.5L358.0,801.5L359.1,799.0L360.4,797.9L361.9,798.4L363.4,800.6L363.7,801.5L363.5,802.0L365.4,806.4L366.3,806.7L368.6,809.7L371.3,814.5L372.1,816.8L373.0,821.9L372.0,822.6L370.8,824.7L373.0,826.0L372.8,827.6L371.8,828.8L372.4,829.8L372.1,830.2L372.5,831.8L374.0,834.3L374.0,834.8L372.3,835.6L367.0,835.9L361.0,834.7L360.0,834.3L358.5,832.7L357.6,832.3L355.5,832.6L353.3,832.1L351.8,832.3L350.0,831.7L348.0,832.2L347.4,833.0L345.6,833.5L345.0,834.0L344.5,833.7L343.4,834.1L341.9,833.9L342.3,833.3L341.9,831.9L341.2,831.0L340.7,829.4L339.2,827.5L339.4,825.9L340.0,824.3L341.8,822.9L344.5,819.8L345.5,816.4L346.0,816.1L345.5,815.3L346.9,811.9L347.1,811.0L346.4,810.0L346.9,809.4L347.1,807.4Z M352.8,767.6L355.2,766.0L355.5,766.3L356.2,766.0L357.4,766.7L357.9,768.8L358.2,768.9L357.8,769.5L357.7,771.9L360.3,773.1L362.3,773.5L364.1,775.2L364.6,778.2L365.4,779.0L365.1,780.0L365.8,780.5L367.3,782.9L367.3,783.9L366.4,784.9L363.7,785.4L361.9,784.6L360.9,784.6L359.8,783.5L356.4,782.7L353.9,780.9L353.8,780.1L353.4,779.8L353.6,778.6L354.3,778.3L356.0,775.0L355.4,774.0L354.1,773.8L352.6,771.5L352.4,768.5L352.8,768.1L352.8,767.6Z M345.8,776.9L346.8,776.6L350.1,777.3L350.5,778.6L349.4,779.3L349.8,779.9L349.2,780.0L347.7,778.7L346.8,778.5L346.9,778.1L346.1,778.1L345.8,776.9Z M343.9,761.5L344.8,761.4L345.7,761.9L347.9,764.0L348.6,766.7L348.2,768.3L346.7,768.9L344.9,768.5L343.1,767.3L343.3,765.6L344.2,764.5L344.2,763.5L343.6,762.4L343.9,761.5Z M341.6,752.5L342.9,751.5L344.3,751.4L345.1,750.3L346.0,751.1L347.0,752.7L350.3,755.9L351.6,755.5L351.5,757.0L352.3,758.0L355.7,760.0L356.8,761.5L356.0,762.0L353.9,762.2L350.9,761.3L347.3,756.6L342.7,753.7L341.6,752.5Z M327.4,723.5L331.1,726.1L335.3,725.3L337.1,725.9L337.0,727.9L337.2,728.3L336.7,728.8L336.8,730.8L336.5,731.1L337.0,731.7L336.9,732.5L336.5,733.1L335.9,733.0L335.5,734.1L336.0,734.7L335.8,735.5L336.1,736.4L336.9,736.1L336.7,735.6L337.1,735.4L338.3,736.3L337.1,736.8L336.9,737.3L337.2,738.5L336.8,738.9L336.6,739.8L337.3,741.1L337.0,741.4L335.2,741.5L334.9,741.2L335.2,740.5L332.6,739.7L331.6,737.0L330.1,736.0L330.4,735.7L330.0,735.0L329.6,735.1L326.2,733.2L326.9,730.7L326.5,729.4L327.0,728.2L326.7,726.6L327.7,725.4L327.4,723.5Z M300.7,685.3L301.5,684.6L303.0,684.5L304.5,683.7L306.4,684.3L309.1,684.5L309.9,685.1L310.3,686.3L311.4,686.1L312.5,687.5L313.4,687.6L314.4,689.3L314.3,691.7L313.4,692.5L311.4,693.2L310.0,695.3L309.1,695.6L308.1,695.4L307.6,695.7L305.6,695.4L302.8,691.9L302.4,692.0L302.0,689.3L300.4,687.1L300.7,685.3Z M286.4,681.6L288.0,680.6L289.6,680.5L291.5,681.0L292.6,680.3L293.3,680.4L293.9,681.4L292.0,682.3L291.6,683.3L289.1,682.4L286.4,683.6L286.0,682.8L286.4,681.6Z"/>
+      </svg>
+    </div>
+    </div>
+    <div class="zoom-controls" id="zoom-controls">
+      <button class="zoom-btn" id="zoom-in-btn" title="Zoom in" aria-label="Zoom in">+</button>
+      <button class="zoom-btn" id="zoom-out-btn" title="Zoom out" aria-label="Zoom out">−</button>
+      <button class="zoom-btn reset" id="zoom-reset-btn" title="Reset view" aria-label="Reset view">↺</button>
+      <div class="zoom-level" id="zoom-level">100%</div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="btn btn-hint" onclick="giveHint()">💡 Hint</button>
+  <button class="btn btn-reset" onclick="resetGame()">🔄 Reset Level</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="win-overlay" id="win">
+  <div class="win-card">
+    <div class="e">🏆</div>
+    <h2 id="win-title">You did it!</h2>
+    <p id="win-msg"></p>
+    <button class="btn btn-reset" onclick="resetGame();document.getElementById('win').classList.remove('show')">Play Again</button>
+  </div>
+</div>
+
+<script>
+const ALL_STATES = [
+  { name:"Maine", cx:93.99, cy:12.58 },
+  { name:"New Hampshire", cx:90.59, cy:17.19, labelOffset:{x:40, y:0} },
+  { name:"Vermont", cx:88.54, cy:17.78, labelOffset:{x:-40, y:0} },
+  { name:"Massachusetts", cx:90.73, cy:21.68, labelOffset:{x:0, y:-18} },
+  { name:"Rhode Island", cx:91.76, cy:23.47, labelOffset:{x:44, y:0} },
+  { name:"Connecticut", cx:90.09, cy:24.43, labelOffset:{x:-58, y:0} },
+  { name:"New York", cx:85.42, cy:21.46 },
+  { name:"New Jersey", cx:87.9, cy:29.61, labelOffset:{x:40, y:0} },
+  { name:"Pennsylvania", cx:81.94, cy:28.5 },
+  { name:"Delaware", cx:86.46, cy:32.33, labelOffset:{x:44, y:0} },
+  { name:"Maryland", cx:84.25, cy:33.49, labelOffset:{x:0, y:-18} },
+  { name:"Virginia", cx:82.54, cy:37.73 },
+  { name:"West Virginia", cx:78.21, cy:35.22 },
+  { name:"North Carolina", cx:80.87, cy:44.2 },
+  { name:"South Carolina", cx:79.73, cy:50.38 },
+  { name:"Georgia", cx:75.2, cy:53.34 },
+  { name:"Florida", cx:80.01, cy:66.38 },
+  { name:"Tennessee", cx:68.31, cy:45.43 },
+  { name:"Kentucky", cx:71.29, cy:40.0 },
+  { name:"Alabama", cx:68.71, cy:54.57 },
+  { name:"Mississippi", cx:62.93, cy:55.35 },
+  { name:"Ohio", cx:73.74, cy:31.57 },
+  { name:"Indiana", cx:67.89, cy:32.57 },
+  { name:"Illinois", cx:62.3, cy:34.84 },
+  { name:"Michigan", cx:65.08, cy:16.11 },
+  { name:"Wisconsin", cx:60.04, cy:21.0 },
+  { name:"Washington", cx:13.39, cy:7.7 },
+  { name:"Oregon", cx:11.12, cy:16.59 },
+  { name:"California", cx:8.43, cy:35.88 },
+  { name:"Idaho", cx:20.27, cy:15.74 },
+  { name:"Montana", cx:30.46, cy:12.62 },
+  { name:"Wyoming", cx:31.88, cy:24.64 },
+  { name:"Nevada", cx:15.67, cy:36.36 },
+  { name:"Utah", cx:23.84, cy:34.77 },
+  { name:"Colorado", cx:34.27, cy:36.43 },
+  { name:"Arizona", cx:21.61, cy:48.21 },
+  { name:"New Mexico", cx:32.22, cy:50.18 },
+  { name:"North Dakota", cx:44.07, cy:14.04 },
+  { name:"South Dakota", cx:44.08, cy:22.25 },
+  { name:"Nebraska", cx:44.08, cy:30.18 },
+  { name:"Kansas", cx:46.87, cy:40.06 },
+  { name:"Oklahoma", cx:48.69, cy:46.33 },
+  { name:"Texas", cx:44.1, cy:59.54 },
+  { name:"Minnesota", cx:53.4, cy:16.63 },
+  { name:"Iowa", cx:55.72, cy:29.04 },
+  { name:"Missouri", cx:57.23, cy:39.35 },
+  { name:"Arkansas", cx:57.51, cy:49.52 },
+  { name:"Louisiana", cx:57.68, cy:60.06 },
+  { name:"Alaska", cx:11.31, cy:85.44 },
+  { name:"Hawaii", cx:32.61, cy:92.7 },
+];
+
+const LEVELS = {
+  1:  { title:"New England",   names:["Maine","New Hampshire","Vermont","Massachusetts","Rhode Island","Connecticut"] },
+  2:  { title:"Mid-Atlantic",  names:["New York","New Jersey","Pennsylvania","Delaware","Maryland"] },
+  3:  { title:"The South",     names:["Virginia","West Virginia","North Carolina","South Carolina","Georgia","Florida","Tennessee","Kentucky","Alabama","Mississippi"] },
+  4:  { title:"Midwest",       names:["Ohio","Indiana","Illinois","Michigan","Wisconsin"] },
+  5:  { title:"Heartland",     names:["Minnesota","Iowa","Missouri","Arkansas","Louisiana"] },
+  6:  { title:"Great Plains",  names:["North Dakota","South Dakota","Nebraska","Kansas","Oklahoma","Texas"] },
+  7:  { title:"Mountain West", names:["Idaho","Montana","Wyoming","Nevada","Utah","Colorado","Arizona","New Mexico"] },
+  8:  { title:"Pacific Coast", names:["Washington","Oregon","California"] },
+  9:  { title:"Alaska & Hawaii", names:["Alaska","Hawaii"] },
+  10: { title:"All 50",        names: null },
+};
+
+let currentLevel = 1;
+let mode = 'match';
+let STATES = [];
+let selected = null, correctCount = 0, wrongCount = 0, answered = new Set(), toastTimer;
+
+let spellOrder = [];
+let spellIdx = 0;
+let spellHintLetters = 0;
+let spellAttempts = 0;
+
+function getActiveStates(level){
+  if(level === 10) return ALL_STATES.slice();
+  const set = new Set(LEVELS[level].names);
+  return ALL_STATES.filter(c => set.has(c.name));
+}
+
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+function safeId(n){return n.replace(/\s/g,'_')}
+function chipId(n){return'chip-'+safeId(n)}
+function dotId(n){return'dot-'+safeId(n)}
+function lblId(n){return'lbl-'+safeId(n)}
+function pathEl(n){return document.getElementById('state-'+safeId(n))}
+function normalize(s){return s.toLowerCase().replace(/[^a-z]/g,'')}
+
+function setLevel(level){
+  currentLevel = level;
+  document.querySelectorAll('.lvl').forEach(b => {
+    b.classList.toggle('active', +b.dataset.level === level);
+  });
+  resetGame();
+}
+
+function setMode(newMode){
+  mode = newMode;
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    const m = b.dataset.mode;
+    b.classList.toggle('active', m === mode);
+    b.classList.toggle('learn-active', m === 'learn' && mode === 'learn');
+  });
+  document.getElementById('wb').classList.toggle('hidden', mode === 'spell');
+  document.getElementById('sp').classList.toggle('hidden', mode !== 'spell');
+  const tag = document.getElementById('header-tagline');
+  if(mode === 'match') tag.textContent = 'Pick a state name, then click it on the map';
+  else if(mode === 'spell') tag.textContent = 'A state lights up — type its name from memory';
+  else tag.textContent = 'Study mode — state names are shown on the map';
+  resetGame();
+}
+
+function resetGame(){
+  selected = null; correctCount = 0; wrongCount = 0; answered = new Set();
+  spellOrder = []; spellIdx = 0; spellHintLetters = 0; spellAttempts = 0;
+  document.getElementById('sp-reveal').style.display = 'none';
+  document.getElementById('sp-input').value = '';
+  document.getElementById('sp-input').classList.remove('wrong','correct');
+  document.getElementById('sp-input').disabled = false;
+  document.getElementById('sp-submit').disabled = false;
+  renderLevel();
+}
+
+function renderLevel(){
+  STATES = getActiveStates(currentLevel);
+  const activeNames = new Set(STATES.map(c => c.name));
+
+  document.querySelectorAll('.state').forEach(p => {
+    const name = p.dataset.name;
+    p.classList.remove('inactive','correct','wrong','learn-highlight','spell-target');
+    if(!activeNames.has(name)){
+      p.classList.add('inactive');
+    } else if(mode === 'learn'){
+      p.classList.add('learn-highlight');
+    }
+    p.onclick = null;
+  });
+
+  if(mode === 'match'){
+    buildWordBank();
+    buildDots();
+    setInst('Select a state name to start 👈');
+  } else if(mode === 'learn'){
+    buildWordBank();
+    buildDots();
+    setInst('<span>📖 Learn mode</span> — study the state names on the map');
+  } else if(mode === 'spell'){
+    buildSpellSession();
+    buildDots();
+  }
+  updateScore();
+  if(window.__resetMapView) window.__resetMapView();
+}
+
+function buildWordBank(){
+  const wb = document.getElementById('wb');
+  wb.querySelectorAll('.chip').forEach(c => c.remove());
+
+  const list = mode === 'learn'
+    ? STATES.slice().sort((a,b)=>a.name.localeCompare(b.name))
+    : shuffle(STATES);
+
+  list.forEach(c => {
+    const btn = document.createElement('button');
+    let cls = 'chip';
+    if(mode === 'learn') cls += ' learn';
+    else if(answered.has(c.name)) cls += ' used';
+    btn.className = cls;
+    btn.textContent = c.name;
+    btn.id = chipId(c.name);
+    if(mode === 'match') btn.onclick = () => selectWord(c.name);
+    wb.appendChild(btn);
+  });
+}
+
+function buildDots(){
+  const wrapper = document.getElementById('map-wrapper');
+  wrapper.querySelectorAll('.dot,.dot-label').forEach(e => e.remove());
+
+  STATES.forEach((c, i) => {
+    const dot = document.createElement('div');
+    let cls = 'dot';
+    if(mode === 'learn') cls += ' learn';
+    else if(mode === 'spell'){
+      if(answered.has(c.name)){ cls += ' correct'; }
+      else if(spellOrder[spellIdx] && spellOrder[spellIdx].name === c.name){ cls += ' spell-target'; }
+      else { return; }
+    }
+    else if(answered.has(c.name)) cls += ' correct';
+    dot.className = cls;
+    dot.id = dotId(c.name);
+    dot.style.left = c.cx + '%';
+    dot.style.top = c.cy + '%';
+    dot.dataset.name = c.name;
+
+    if(mode === 'learn'){
+      dot.textContent = '●';
+    } else if(mode === 'spell'){
+      if(answered.has(c.name)) dot.textContent = '✓';
+      else dot.textContent = '?';
+    } else if(answered.has(c.name)){
+      dot.textContent = '✓';
+    } else {
+      dot.textContent = (i+1);
+      dot.onclick = () => handleGuess(c.name);
+    }
+    wrapper.appendChild(dot);
+
+    if(mode === 'learn'){
+      addLabel(wrapper, c, true);
+    } else if(answered.has(c.name)){
+      addLabel(wrapper, c, false);
+    }
+  });
+
+  if(mode === 'match'){
+    document.querySelectorAll('.state').forEach(p => {
+      const n = p.dataset.name;
+      if(STATES.some(c => c.name === n) && !answered.has(n)){
+        p.onclick = () => handleGuess(n);
+      } else {
+        p.onclick = null;
+      }
+    });
+  }
+}
+
+function addLabel(wrapper, c, isLearn){
+  const lbl = document.createElement('div');
+  lbl.className = 'dot-label' + (isLearn ? ' learn' : '');
+  lbl.id = lblId(c.name);
+  lbl.style.left = c.cx + '%';
+  lbl.style.top = c.cy + '%';
+  let mx = 0, my = 11;
+  if(isLearn && c.labelOffset){
+    mx = c.labelOffset.x;
+    my = 11 + (c.labelOffset.y || 0);
+  }
+  lbl.style.marginLeft = mx + 'px';
+  lbl.style.marginTop = my + 'px';
+  lbl.textContent = c.name;
+  wrapper.appendChild(lbl);
+}
+
+// ===== MATCH MODE =====
+function selectWord(name){
+  if(mode !== 'match' || answered.has(name)) return;
+  if(selected === name){
+    selected = null;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+    setInst('Select a state name to start 👈');
+    return;
+  }
+  selected = name;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  const chip = document.getElementById(chipId(name));
+  if(chip) chip.classList.add('selected');
+  setInst('Now find <span>'+name+'</span> on the map and click it');
+}
+
+function handleGuess(name){
+  if(mode !== 'match' || answered.has(name)) return;
+  if(!selected){ showToast('Pick a name first! 👈','info'); return; }
+  const dot = document.getElementById(dotId(name));
+  const path = pathEl(name);
+  if(selected === name){
+    dot.classList.add('correct'); dot.textContent = '✓'; dot.onclick = null;
+    if(path){ path.classList.add('correct'); path.onclick = null; }
+    answered.add(name); correctCount++;
+    const chip = document.getElementById(chipId(name));
+    if(chip){ chip.classList.add('used'); chip.classList.remove('selected'); }
+    addLabel(document.getElementById('map-wrapper'), STATES.find(x => x.name === name), false);
+    selected = null; updateScore();
+    showToast('✅ '+name+'!','ok');
+    const remaining = STATES.length - correctCount;
+    setInst(remaining > 0 ? 'Great! Pick another name 👈' : 'All done! 🎉');
+    if(correctCount === STATES.length) setTimeout(showWin, 700);
+  } else {
+    dot.classList.add('wrong');
+    if(path) path.classList.add('wrong');
+    wrongCount++; updateScore();
+    showToast('❌ Try again','bad');
+    setTimeout(() => {
+      dot.classList.remove('wrong');
+      if(path) path.classList.remove('wrong');
+    }, 700);
+  }
+}
+
+function giveHint(){
+  if(mode === 'learn'){ showToast('Pick a different mode to use hints','info'); return; }
+  if(mode === 'spell'){ spellHint(); return; }
+  if(!selected){ showToast('Pick a name first! 👈','info'); return; }
+  const dot = document.getElementById(dotId(selected));
+  if(!dot) return;
+  dot.classList.remove('hint-flash'); void dot.offsetWidth;
+  dot.classList.add('hint-flash');
+  setTimeout(() => dot.classList.remove('hint-flash'), 1800);
+}
+
+// ===== SPELL MODE =====
+function buildSpellSession(){
+  spellOrder = shuffle(STATES);
+  spellIdx = 0;
+  spellHintLetters = 0;
+  spellAttempts = 0;
+  renderSpellProgress();
+  showSpellPrompt();
+}
+
+function renderSpellProgress(){
+  const c = document.getElementById('sp-progress');
+  c.innerHTML = '';
+  spellOrder.forEach((s, i) => {
+    const pip = document.createElement('div');
+    let cls = 'sp-pip';
+    if(i < spellIdx) cls += ' done';
+    else if(i === spellIdx) cls += ' current';
+    pip.className = cls;
+    pip.title = s.name;
+    c.appendChild(pip);
+  });
+}
+
+function showSpellPrompt(){
+  if(spellIdx >= spellOrder.length){
+    setInst('All done! 🎉');
+    document.getElementById('sp-prompt-text').textContent = 'Level complete!';
+    document.getElementById('sp-prompt-sub').textContent = 'Great spelling!';
+    document.getElementById('sp-num').textContent = '🏆';
+    document.getElementById('sp-input').disabled = true;
+    document.getElementById('sp-submit').disabled = true;
+    document.getElementById('sp-reveal').style.display = 'none';
+    setTimeout(showWin, 700);
+    return;
+  }
+  const target = spellOrder[spellIdx];
+  spellHintLetters = 0;
+  spellAttempts = 0;
+  document.getElementById('sp-num').textContent = (spellIdx + 1);
+  document.getElementById('sp-prompt-text').textContent = 'Spell this state';
+  document.getElementById('sp-prompt-sub').textContent = 'Look for the glowing state on the map →';
+  document.getElementById('sp-input').value = '';
+  document.getElementById('sp-input').classList.remove('wrong','correct');
+  document.getElementById('sp-input').disabled = false;
+  document.getElementById('sp-submit').disabled = false;
+  document.getElementById('sp-reveal').style.display = 'none';
+  setInst('A state is glowing on the map — type its name below ✏️');
+
+  document.querySelectorAll('.state').forEach(p => p.classList.remove('spell-target'));
+  const path = pathEl(target.name);
+  if(path) path.classList.add('spell-target');
+
+  renderSpellProgress();
+  buildDots();
+
+  setTimeout(() => document.getElementById('sp-input').focus(), 80);
+}
+
+function checkSpell(){
+  if(mode !== 'spell') return;
+  if(spellIdx >= spellOrder.length) return;
+  const inp = document.getElementById('sp-input');
+  const target = spellOrder[spellIdx];
+  const guess = normalize(inp.value);
+  const answer = normalize(target.name);
+
+  if(!guess){
+    showToast('Type the state name first ✏️', 'info');
+    return;
+  }
+
+  if(guess === answer){
+    inp.classList.remove('wrong');
+    inp.classList.add('correct');
+    inp.disabled = true;
+    document.getElementById('sp-submit').disabled = true;
+
+    const path = pathEl(target.name);
+    if(path){
+      path.classList.remove('spell-target');
+      path.classList.add('correct');
+    }
+    const targetDot = document.getElementById(dotId(target.name));
+    if(targetDot){
+      targetDot.classList.remove('spell-target');
+      targetDot.classList.add('correct');
+      targetDot.textContent = '✓';
+    }
+    answered.add(target.name);
+    correctCount++;
+    updateScore();
+    addLabel(document.getElementById('map-wrapper'), target, false);
+    showToast('✅ '+target.name+'!', 'ok');
+
+    spellIdx++;
+    setTimeout(showSpellPrompt, 900);
+  } else {
+    inp.classList.add('wrong');
+    wrongCount++;
+    spellAttempts++;
+    updateScore();
+
+    if(spellAttempts >= 3){
+      document.getElementById('sp-reveal').textContent = target.name;
+      document.getElementById('sp-reveal').style.display = 'block';
+      showToast('Try again — answer shown 👁️', 'info');
+    } else {
+      showToast('❌ Not quite — try again','bad');
+    }
+    setTimeout(() => inp.classList.remove('wrong'), 500);
+    inp.select();
+  }
+}
+
+function spellHint(){
+  if(mode !== 'spell') return;
+  if(spellIdx >= spellOrder.length) return;
+  const target = spellOrder[spellIdx];
+  spellHintLetters = Math.min(spellHintLetters + 1, target.name.length - 1);
+  let display = '';
+  for(let i = 0; i < target.name.length; i++){
+    const ch = target.name[i];
+    if(ch === ' '){ display += ' '; }
+    else if(i < spellHintLetters){ display += ch; }
+    else { display += '_'; }
+  }
+  document.getElementById('sp-reveal').textContent = display;
+  document.getElementById('sp-reveal').style.display = 'block';
+
+  const dot = document.getElementById(dotId(target.name));
+  if(dot){
+    dot.classList.remove('hint-flash'); void dot.offsetWidth;
+    dot.classList.add('hint-flash');
+    setTimeout(() => dot.classList.remove('hint-flash'), 1800);
+  }
+}
+
+function spellShow(){
+  if(mode !== 'spell') return;
+  if(spellIdx >= spellOrder.length) return;
+  const target = spellOrder[spellIdx];
+  document.getElementById('sp-reveal').textContent = target.name;
+  document.getElementById('sp-reveal').style.display = 'block';
+  showToast('Now type it ✏️', 'info');
+  document.getElementById('sp-input').focus();
+}
+
+// ===== SHARED =====
+function updateScore(){
+  document.getElementById('sc').textContent = correctCount;
+  document.getElementById('sw').textContent = wrongCount;
+  document.getElementById('sl').textContent = STATES.length - correctCount;
+}
+function setInst(h){ document.getElementById('inst').innerHTML = h; }
+function showToast(msg, type){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast ' + type;
+  void t.offsetWidth; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2100);
+}
+function showWin(){
+  const levelName = LEVELS[currentLevel].title;
+  document.getElementById('win-title').textContent =
+    currentLevel === 10 ? '⭐ You finished all 50!' : 'Level ' + currentLevel + ' complete!';
+  const modeLabel = mode === 'spell' ? ' (Spell mode)' : '';
+  document.getElementById('win-msg').textContent =
+    'Finished ' + levelName + modeLabel + ' with ' + wrongCount + ' wrong guess' + (wrongCount === 1 ? '' : 'es') + '.';
+  document.getElementById('win').classList.add('show');
+}
+
+document.querySelectorAll('.lvl').forEach(b => {
+  b.onclick = () => setLevel(+b.dataset.level);
+});
+document.querySelectorAll('.mode-btn').forEach(b => {
+  b.onclick = () => setMode(b.dataset.mode);
+});
+document.getElementById('sp-submit').onclick = checkSpell;
+document.getElementById('sp-hint').onclick = spellHint;
+document.getElementById('sp-show').onclick = spellShow;
+document.getElementById('sp-input').addEventListener('keydown', e => {
+  if(e.key === 'Enter') checkSpell();
+});
+
+// ============================
+// ZOOM & PAN
+// ============================
+(function setupZoomPan(){
+  const area = document.getElementById('map-area');
+  const layer = document.getElementById('map-zoom-layer');
+  const levelEl = document.getElementById('zoom-level');
+
+  let scale = 1, tx = 0, ty = 0;
+  const MIN = 1, MAX = 6;
+
+  // Clamp pan so the map can't be dragged completely out of view.
+  // When scale=1, no panning allowed. When scaled up, allow panning by
+  // (scale - 1) * half-dimension on each axis.
+  function clampPan(){
+    const rect = area.getBoundingClientRect();
+    const maxTx = (scale - 1) * rect.width  / 2;
+    const maxTy = (scale - 1) * rect.height / 2;
+    if(tx >  maxTx) tx =  maxTx;
+    if(tx < -maxTx) tx = -maxTx;
+    if(ty >  maxTy) ty =  maxTy;
+    if(ty < -maxTy) ty = -maxTy;
+  }
+
+  function applyTransform(animated){
+    clampPan();
+    layer.style.transition = animated ? 'transform .18s ease-out' : 'none';
+    layer.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    layer.classList.toggle('zoomed', scale > 1.01);
+    levelEl.textContent = Math.round(scale * 100) + '%';
+  }
+
+  // Zoom toward a focus point (in client coords). Keeps that point stable.
+  function zoomTo(newScale, clientX, clientY){
+    newScale = Math.max(MIN, Math.min(MAX, newScale));
+    if(newScale === scale) return;
+    const rect = area.getBoundingClientRect();
+    // Point in area coords relative to area center
+    const fx = (clientX - rect.left) - rect.width  / 2;
+    const fy = (clientY - rect.top)  - rect.height / 2;
+    // Solve so the (fx,fy) point on screen maps to the same map point after zoom.
+    // Before: mapPoint = (fx - tx) / scale.   After: same mapPoint = (fx - tx') / newScale.
+    // => tx' = fx - (fx - tx) * (newScale / scale)
+    tx = fx - (fx - tx) * (newScale / scale);
+    ty = fy - (fy - ty) * (newScale / scale);
+    scale = newScale;
+    applyTransform(false);
+  }
+
+  function resetView(){
+    scale = 1; tx = 0; ty = 0;
+    applyTransform(true);
+  }
+
+  // ===== Mouse wheel =====
+  area.addEventListener('wheel', e => {
+    // Allow wheel zoom without Ctrl so kids don't get stuck
+    e.preventDefault();
+    // deltaY > 0 = scroll down = zoom out
+    const factor = Math.exp(-e.deltaY * 0.0015);
+    zoomTo(scale * factor, e.clientX, e.clientY);
+  }, { passive: false });
+
+  // ===== Mouse drag pan (only when zoomed in) =====
+  let isDragging = false;
+  let dragStartX = 0, dragStartY = 0, startTx = 0, startTy = 0;
+  let mouseDownOn = null;
+  let movedDist = 0;
+
+  area.addEventListener('mousedown', e => {
+    if(scale <= 1.01) return; // no pan at default zoom
+    if(e.button !== 0) return;
+    isDragging = true;
+    layer.classList.add('dragging');
+    dragStartX = e.clientX; dragStartY = e.clientY;
+    startTx = tx; startTy = ty;
+    mouseDownOn = e.target;
+    movedDist = 0;
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', e => {
+    if(!isDragging) return;
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
+    movedDist = Math.max(movedDist, Math.hypot(dx, dy));
+    tx = startTx + dx;
+    ty = startTy + dy;
+    applyTransform(false);
+  });
+
+  window.addEventListener('mouseup', e => {
+    if(!isDragging) return;
+    isDragging = false;
+    layer.classList.remove('dragging');
+    // If we actually dragged, swallow the click on whatever child element
+    if(movedDist > 6){
+      const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); window.removeEventListener('click', swallow, true); };
+      window.addEventListener('click', swallow, true);
+    }
+  });
+
+  // ===== Touch: pinch zoom & one-finger pan =====
+  let touchMode = null; // 'pan' | 'pinch' | null
+  let touchStartX = 0, touchStartY = 0, touchStartTx = 0, touchStartTy = 0;
+  let pinchStartDist = 0, pinchStartScale = 1;
+  let pinchStartMidX = 0, pinchStartMidY = 0;
+  let touchMovedDist = 0;
+  let touchStartTarget = null;
+
+  function getTouchDist(t1, t2){
+    return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+  }
+  function getTouchMid(t1, t2){
+    return { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+  }
+
+  area.addEventListener('touchstart', e => {
+    if(e.touches.length === 1){
+      // Allow 1-finger pan only when zoomed in; otherwise let the touch fall through to tap state
+      if(scale > 1.01){
+        touchMode = 'pan';
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartTx = tx; touchStartTy = ty;
+        touchMovedDist = 0;
+        touchStartTarget = e.target;
+        e.preventDefault();
+      }
+    } else if(e.touches.length === 2){
+      touchMode = 'pinch';
+      pinchStartDist = getTouchDist(e.touches[0], e.touches[1]);
+      pinchStartScale = scale;
+      const mid = getTouchMid(e.touches[0], e.touches[1]);
+      pinchStartMidX = mid.x;
+      pinchStartMidY = mid.y;
+      // Store current pan as the baseline
+      touchStartTx = tx; touchStartTy = ty;
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  area.addEventListener('touchmove', e => {
+    if(touchMode === 'pan' && e.touches.length === 1){
+      const dx = e.touches[0].clientX - touchStartX;
+      const dy = e.touches[0].clientY - touchStartY;
+      touchMovedDist = Math.max(touchMovedDist, Math.hypot(dx, dy));
+      tx = touchStartTx + dx;
+      ty = touchStartTy + dy;
+      applyTransform(false);
+      e.preventDefault();
+    } else if(touchMode === 'pinch' && e.touches.length === 2){
+      const newDist = getTouchDist(e.touches[0], e.touches[1]);
+      const mid = getTouchMid(e.touches[0], e.touches[1]);
+      const newScale = Math.max(MIN, Math.min(MAX, pinchStartScale * (newDist / pinchStartDist)));
+      // Zoom toward the pinch midpoint, accounting for any midpoint drift
+      const rect = area.getBoundingClientRect();
+      const fx = mid.x - rect.left - rect.width  / 2;
+      const fy = mid.y - rect.top  - rect.height / 2;
+      const startFx = pinchStartMidX - rect.left - rect.width  / 2;
+      const startFy = pinchStartMidY - rect.top  - rect.height / 2;
+      // mapPoint = (startFx - touchStartTx) / pinchStartScale
+      // We want that mapPoint to land at (fx - tx) / newScale  → tx = fx - mapPoint * newScale
+      const mapX = (startFx - touchStartTx) / pinchStartScale;
+      const mapY = (startFy - touchStartTy) / pinchStartScale;
+      tx = fx - mapX * newScale;
+      ty = fy - mapY * newScale;
+      scale = newScale;
+      applyTransform(false);
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  function endTouch(e){
+    // If user did meaningful pan / pinch movement, swallow the next click so it doesn't trigger a guess
+    if(touchMode === 'pan' && touchMovedDist > 8){
+      const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); window.removeEventListener('click', swallow, true); };
+      window.addEventListener('click', swallow, true);
+    }
+    if(e.touches.length === 0){
+      touchMode = null;
+    } else if(e.touches.length === 1 && touchMode === 'pinch'){
+      // Transition from pinch to pan
+      touchMode = 'pan';
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTx = tx; touchStartTy = ty;
+      touchMovedDist = 0;
+    }
+  }
+  area.addEventListener('touchend', endTouch);
+  area.addEventListener('touchcancel', endTouch);
+
+  // ===== Buttons =====
+  document.getElementById('zoom-in-btn').onclick = () => {
+    const r = area.getBoundingClientRect();
+    zoomTo(scale * 1.4, r.left + r.width / 2, r.top + r.height / 2);
+  };
+  document.getElementById('zoom-out-btn').onclick = () => {
+    const r = area.getBoundingClientRect();
+    zoomTo(scale / 1.4, r.left + r.width / 2, r.top + r.height / 2);
+  };
+  document.getElementById('zoom-reset-btn').onclick = resetView;
+
+  // ===== Keyboard shortcuts =====
+  window.addEventListener('keydown', e => {
+    // Only when not typing in the spell input
+    if(document.activeElement && document.activeElement.tagName === 'INPUT') return;
+    if(e.key === '+' || e.key === '='){
+      const r = area.getBoundingClientRect();
+      zoomTo(scale * 1.4, r.left + r.width / 2, r.top + r.height / 2);
+    } else if(e.key === '-' || e.key === '_'){
+      const r = area.getBoundingClientRect();
+      zoomTo(scale / 1.4, r.left + r.width / 2, r.top + r.height / 2);
+    } else if(e.key === '0'){
+      resetView();
+    }
+  });
+
+  // Expose the view-reset so renderLevel can call it
+  window.__resetMapView = resetView;
+
+  // Initial apply
+  applyTransform(false);
+})();
+
+renderLevel();
+</script>
+</body>
+</html>
