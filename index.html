@@ -105,24 +105,25 @@ header p{font-size:0.74rem;color:#3d6680;margin-top:1px;font-weight:600}
   50%{filter:drop-shadow(0 0 8px #a04e2eaa)}
 }
 
-/* DOTS */
-.dot{position:absolute;width:22px;height:22px;border-radius:50%;background:#b03a2e;border:2.5px solid #fbf3e0;color:#fbf3e0;font-family:'Baloo 2',cursive;font-size:0.6rem;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;transform:translate(-50%,-50%);transition:all .15s;box-shadow:0 2px 8px rgba(0,0,0,0.5);z-index:20;user-select:none;pointer-events:all}
-.dot:hover:not(.correct):not(.wrong):not(.learn):not(.spell-pending){transform:translate(-50%,-50%) scale(1.35);box-shadow:0 0 14px #b03a2e99}
+/* DOTS — use --inv-zoom to keep dots a constant visible size when the map is zoomed */
+.map-zoom-layer{--inv-zoom:1}
+.dot{position:absolute;width:22px;height:22px;border-radius:50%;background:#b03a2e;border:2.5px solid #fbf3e0;color:#fbf3e0;font-family:'Baloo 2',cursive;font-size:0.6rem;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;transform:translate(-50%,-50%) scale(var(--inv-zoom));transition:all .15s;box-shadow:0 2px 8px rgba(0,0,0,0.5);z-index:20;user-select:none;pointer-events:all}
+.dot:hover:not(.correct):not(.wrong):not(.learn):not(.spell-pending){transform:translate(-50%,-50%) scale(calc(var(--inv-zoom) * 1.35));box-shadow:0 0 14px #b03a2e99}
 .dot.correct{background:#5b9b3a;border-color:#fbf3e0;cursor:default;animation:popIn .4s cubic-bezier(.34,1.56,.64,1) forwards}
 .dot.wrong{background:#c0532e;animation:shake .4s ease}
 .dot.learn{background:#7a5db8;color:#fff;cursor:default;pointer-events:none}
 .dot.spell-pending{background:#3d6680;pointer-events:none;cursor:default;font-size:0.7rem}
 .dot.spell-target{background:#b03a2e;pointer-events:none;animation:targetPulse 1.4s ease-in-out infinite;font-size:0.78rem;width:28px;height:28px}
 .dot.hint-flash{animation:hintFlash .5s ease 3}
-.dot-label{position:absolute;transform:translateX(-50%);background:rgba(251,243,224,.96);color:#3a6a20;font-family:'Quicksand',sans-serif;font-weight:700;font-size:0.56rem;padding:1px 5px;border-radius:3px;pointer-events:none;white-space:nowrap;z-index:21;border:1px solid #5b9b3a66;margin-top:11px}
+.dot-label{position:absolute;transform:translate(-50%,0) scale(var(--inv-zoom));transform-origin:50% 0;background:rgba(251,243,224,.96);color:#3a6a20;font-family:'Quicksand',sans-serif;font-weight:700;font-size:0.56rem;padding:1px 5px;border-radius:3px;pointer-events:none;white-space:nowrap;z-index:21;border:1px solid #5b9b3a66;margin-top:11px}
 .dot-label.learn{color:#fff;background:#7a5db8;border-color:#a89cd0;font-size:0.7rem;padding:2px 7px;font-weight:800;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
 
-@keyframes popIn{0%{transform:translate(-50%,-50%) scale(.4);opacity:.5}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
-@keyframes shake{0%,100%{transform:translate(-50%,-50%)}25%{transform:translate(calc(-50% - 5px),-50%)}75%{transform:translate(calc(-50% + 5px),-50%)}}
-@keyframes hintFlash{0%,100%{transform:translate(-50%,-50%) scale(1);box-shadow:0 0 0 0 #b03a2ecc}50%{transform:translate(-50%,-50%) scale(1.5);box-shadow:0 0 0 10px #b03a2e00}}
+@keyframes popIn{0%{transform:translate(-50%,-50%) scale(calc(var(--inv-zoom) * .4));opacity:.5}100%{transform:translate(-50%,-50%) scale(var(--inv-zoom));opacity:1}}
+@keyframes shake{0%,100%{transform:translate(-50%,-50%) scale(var(--inv-zoom))}25%{transform:translate(calc(-50% - 5px),-50%) scale(var(--inv-zoom))}75%{transform:translate(calc(-50% + 5px),-50%) scale(var(--inv-zoom))}}
+@keyframes hintFlash{0%,100%{transform:translate(-50%,-50%) scale(var(--inv-zoom));box-shadow:0 0 0 0 #b03a2ecc}50%{transform:translate(-50%,-50%) scale(calc(var(--inv-zoom) * 1.5));box-shadow:0 0 0 10px #b03a2e00}}
 @keyframes targetPulse{
-  0%,100%{transform:translate(-50%,-50%) scale(1);box-shadow:0 0 0 0 #b03a2ecc}
-  50%{transform:translate(-50%,-50%) scale(1.15);box-shadow:0 0 0 12px #b03a2e00}
+  0%,100%{transform:translate(-50%,-50%) scale(var(--inv-zoom));box-shadow:0 0 0 0 #b03a2ecc}
+  50%{transform:translate(-50%,-50%) scale(calc(var(--inv-zoom) * 1.15));box-shadow:0 0 0 12px #b03a2e00}
 }
 
 /* CONTROLS */
@@ -811,6 +812,9 @@ document.getElementById('sp-input').addEventListener('keydown', e => {
     clampPan();
     layer.style.transition = animated ? 'transform .18s ease-out' : 'none';
     layer.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    // Counter-scale dots and labels so they don't cover small states like RI when zoomed in.
+    // Clamp at 0.5 so the numbers inside the dots stay legible even at extreme zoom.
+    layer.style.setProperty('--inv-zoom', Math.max(1 / scale, 0.5));
     layer.classList.toggle('zoomed', scale > 1.01);
     levelEl.textContent = Math.round(scale * 100) + '%';
   }
