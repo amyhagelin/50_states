@@ -72,7 +72,7 @@ header p{font-size:0.74rem;color:#3d6680;margin-top:1px;font-weight:600}
 /* MAP */
 .map-area{flex:1;display:flex;align-items:center;justify-content:center;padding:6px;background:#aac8dc;overflow:hidden;min-width:0;min-height:0;position:relative;touch-action:none}
 .map-zoom-layer{display:flex;align-items:center;justify-content:center;width:100%;height:100%;transform-origin:50% 50%;transition:transform .14s ease-out;will-change:transform}
-.map-zoom-layer.dragging{transition:none;cursor:grabbing}
+.map-zoom-layer.dragging{transition:none;cursor:grabbing;user-select:none}
 .map-zoom-layer.zoomed{cursor:grab}
 .map-wrapper{position:relative;display:block;line-height:0;height:100%;aspect-ratio:1100/883;max-height:100%;max-width:100%}
 #us-svg{display:block;width:100%;height:100%;pointer-events:auto}
@@ -861,7 +861,8 @@ document.getElementById('sp-input').addEventListener('keydown', e => {
     startTx = tx; startTy = ty;
     mouseDownOn = e.target;
     movedDist = 0;
-    e.preventDefault();
+    // NOTE: do NOT preventDefault here — that would suppress the click event
+    // on chips/dots below. We only swallow clicks AFTER a real drag (in mouseup).
   });
 
   window.addEventListener('mousemove', e => {
@@ -878,10 +879,17 @@ document.getElementById('sp-input').addEventListener('keydown', e => {
     if(!isDragging) return;
     isDragging = false;
     layer.classList.remove('dragging');
-    // If we actually dragged, swallow the click on whatever child element
+    // If we actually dragged, swallow the synthetic click that the browser
+    // fires immediately after mouseup. Time-bound it so we don't eat
+    // future, intentional clicks.
     if(movedDist > 6){
-      const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); window.removeEventListener('click', swallow, true); };
+      const swallow = ev => {
+        ev.stopPropagation();
+        ev.preventDefault();
+        window.removeEventListener('click', swallow, true);
+      };
       window.addEventListener('click', swallow, true);
+      setTimeout(() => window.removeEventListener('click', swallow, true), 100);
     }
   });
 
@@ -910,7 +918,8 @@ document.getElementById('sp-input').addEventListener('keydown', e => {
         touchStartTx = tx; touchStartTy = ty;
         touchMovedDist = 0;
         touchStartTarget = e.target;
-        e.preventDefault();
+        // NOTE: do NOT preventDefault here — that would suppress the click event
+        // on chips/dots below. We only preventDefault in touchmove once a real drag begins.
       }
     } else if(e.touches.length === 2){
       touchMode = 'pinch';
@@ -919,8 +928,8 @@ document.getElementById('sp-input').addEventListener('keydown', e => {
       const mid = getTouchMid(e.touches[0], e.touches[1]);
       pinchStartMidX = mid.x;
       pinchStartMidY = mid.y;
-      // Store current pan as the baseline
       touchStartTx = tx; touchStartTy = ty;
+      // 2-finger pinch is unambiguous — safe to preventDefault here
       e.preventDefault();
     }
   }, { passive: false });
@@ -957,10 +966,16 @@ document.getElementById('sp-input').addEventListener('keydown', e => {
   }, { passive: false });
 
   function endTouch(e){
-    // If user did meaningful pan / pinch movement, swallow the next click so it doesn't trigger a guess
+    // If user did meaningful pan / pinch movement, swallow the synthetic click
+    // that fires immediately after touchend. Time-bound so future taps work.
     if(touchMode === 'pan' && touchMovedDist > 8){
-      const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); window.removeEventListener('click', swallow, true); };
+      const swallow = ev => {
+        ev.stopPropagation();
+        ev.preventDefault();
+        window.removeEventListener('click', swallow, true);
+      };
       window.addEventListener('click', swallow, true);
+      setTimeout(() => window.removeEventListener('click', swallow, true), 100);
     }
     if(e.touches.length === 0){
       touchMode = null;
